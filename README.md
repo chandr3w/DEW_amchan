@@ -18,7 +18,7 @@ Install DEW by downloading the DEW file.
 
 ## Running DEW
 
-This section provide a basic example on the running of DEW. Because the input fields are interactive, it relies on user input in order to function (which cannot be demonstrated here). Documentation is available at:
+This section provide a basic example on the running of DEW. Because the input fields are interactive, it relies on user input in order to function (which cannot be demonstrated here). [Full documentation](https://chandr3w.github.io/DEW_amchan/) for the class is available externally.
 
 
 
@@ -33,9 +33,11 @@ Certain equations within DEW are valid to certain values (as are the properties 
 
 ## Authors
 
-* **Baptiste Journaux** - *University of Washington, Earth and Space Sciences Department, Seattle, USA* 
-* **J. Michael Brown** - *University of Washington, Earth and Space Sciences Department, Seattle, USA* 
-* **Penny Espinoza** - *University of Washington, Earth and Space Sciences Department, Seattle, USA* 
+* **Andrew Chan** - *Div. of Geological and Planetary Sciences, California Institute of Technology, Pasadena, CA, USA 91125* 
+* **Mohit Melwani Daswani** - *Group 3226 (Planetary Interiors and Geophysics). NASA Jet Propulsion Laboratory, California Institute of Technology, Pasadena, CA 91109
+* 
+* **Steven Vance** - *Group 3226 (Planetary Interiors and Geophysics). NASA Jet Propulsion Laboratory, California Institute of Technology, Pasadena, CA 91109
+* 
 
 ## Change log
 
