@@ -36,7 +36,18 @@ This will execute the imports of packages and the initialization of the model. I
 ### Range of validity
 Certain equations within DEW are valid to certain values (as are the properties of specific mineral species). For more information please see the [DEW website](http://www.dewcommunity.org/)
 
+### Dependencies
 
+* Pandas
+* Numpy
+* Sys
+* Threading
+* Subprocess
+* Os
+* Json
+* Matplotlib
+* Matplotlib Toolkits
+* Collections
 
 ## References
 #TODO
