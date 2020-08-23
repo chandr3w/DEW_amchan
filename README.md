@@ -20,6 +20,16 @@ Install DEW by downloading the DEW file.
 
 This section provide a basic example on the running of DEW. Because the input fields are interactive, it relies on user input in order to function (which cannot be demonstrated here). [Full documentation](https://chandr3w.github.io/DEW_amchan/) for the class is available externally.
 
+### Download
+Download the file "DEW_Folder" from the Github repository.
+
+### Installing DEW
+Execute the following line in the same working directory that the DEW files are in:
+```
+%run DEW.py
+```
+This will execute the imports of packages and the initialization of the model. If you wish to change base parameters please see the documentation. The only non-standard package that DEW is dependent on is the "pandas" package, however a full list of dependencies is included below.
+
 
 
 
