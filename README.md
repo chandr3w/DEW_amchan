@@ -11,27 +11,70 @@ The DEW package allows the user to compute the thermodynamic and elastic propert
 
 ## Getting Started
 
-
-### Installing
-Install DEW by downloading the DEW file.
-
-
-## Running DEW
-
 This section provide a basic example on the running of DEW. Because the input fields are interactive, it relies on user input in order to function (which cannot be demonstrated here). [Full documentation](https://chandr3w.github.io/DEW_amchan/) for the class is available externally.
 
 ### Download
-Download the file "DEW_Folder" from the Github repository.
+Clone the repository and set the working directory as DEW_Folder
 
-### Installing DEW
+### Running DEW
 Execute the following line in the same working directory that the DEW files are in:
 ```
 %run DEW.py
 ```
-This will execute the imports of packages and the initialization of the model. If you wish to change base parameters please see the documentation. The only non-standard package that DEW is dependent on is the "pandas" package, however a full list of dependencies is included below.
+You are now ready to use the DEW module! This command will execute the imports of packages and the initialization of the model. If you wish to change base parameters please see the documentation. The only non-standard package that DEW is dependent on is the "pandas" package, however a full list of dependencies is included below.
 
+### Using the Model
+DEW is an object-oriented class dependent on the DEWEquations class. To run it, first initialize a DEW object:
+```
+reaction = DEW()
+```
+From here, set the inputs, outputs, and preferences interactively. *Throughout every stage in the model, parameters can be queried for debugging. See the documentation for more details.* 
+```
+reaction.set_inputs()
+# Initialize the LHS of the reaction
+reaction.set_outputs()
+# Initialize the RHS of the reaction
+reaction.set_preferences()
+# By default, the reaction runs at Psat conditions (see documentation). The set_preferences() method interactively changes this.
+```
+If custom options are selected in the preferences, the relevant CSV files must be updated. Otherwise, you must run the following command:
+```
+reaction.set_TPRho()
+```
+This command will interactively initialize temperature and pressure arrays. Finally, run
+```
+reaction.calculate()
+```
+You can now query
+```
+reaction.delG
+# Gibbs of Formation
+reaction.delV
+# Volume change of Formation
+reaction.logK
+# The log K value of the reaction
+reaction.make_plots()
+# Automatically constructs the plots for the model.
+```
 
+### Running SUPCRTBL
+Included in the DEW_Folder is SUPCRTBL, a similar program to calculate the properties of species at different temeperature and pressure conditions.
+```
+reaction.run_supcrt()
+```
+This command will interactively run SUPCRTBL inline and create output files. It automatically updates "reaction.supcrtFile", a variable that stores the most recently produced Supcrt file.
 
+Now run:
+```
+reaction.calculate_supcrt()
+```
+This function takes one optional argument of a SUPCRTBL output file. For the input file or the file previously calculated it will calculate "reaction.supcrtOut", a dictionary that can be queried for 'delG', 'delV', 'LogK', 'delH', 'delS', 'delCp', 'DH2O', 'Temperature', and 'Pressure'. 
+
+Finally, run:
+```
+reaction.make_supcrt_plots()
+```
+To produce the same plots as DEW.
 
 ### Range of validity
 Certain equations within DEW are valid to certain values (as are the properties of specific mineral species). For more information please see the [DEW website](http://www.dewcommunity.org/)
@@ -56,9 +99,7 @@ Certain equations within DEW are valid to certain values (as are the properties 
 
 * **Andrew Chan** - *Div. of Geological and Planetary Sciences, California Institute of Technology, Pasadena, CA, USA 91125* 
 * **Mohit Melwani Daswani** - *Group 3226 (Planetary Interiors and Geophysics). NASA Jet Propulsion Laboratory, California Institute of Technology, Pasadena, CA 91109
-* 
 * **Steven Vance** - *Group 3226 (Planetary Interiors and Geophysics). NASA Jet Propulsion Laboratory, California Institute of Technology, Pasadena, CA 91109
-* 
 
 ## Change log
 
