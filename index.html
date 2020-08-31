@@ -58,6 +58,20 @@ Conversion = 41.8393
 
 
 # In[8]:
+def aqueous_options():
+    &#39;&#39;&#39;Returns all options for aqueous species&#39;&#39;&#39;
+    for item in nameLst:
+        print(item)
+def gas_options():
+    &#39;&#39;&#39;Returns all options for gasseous species&#39;&#39;&#39;
+    for item in GasLst:
+        print(item)
+def mineral_options():
+    &#39;&#39;&#39;Returns all options for mineral species&#39;&#39;&#39;
+    for key in mineralDictionary:
+        print(key)
+
+    
 
 
 class DEW(object):
@@ -216,7 +230,31 @@ class DEW(object):
         &#39;&#39;&#39;Stores the output from calculate_supcrt&#39;&#39;&#39;
         
 
-    
+    def options(self):
+        &#39;&#39;&#39;Prints a welcome message and basic options&#39;&#39;&#39;
+        print(&#39;Welcome to DEWPython, here are the options you can run:&#39;)
+        print(&#39;1. DEW(): this initializes a Deep Earth Water Model Object&#39;)
+        print(&#39;  -The DEW object requires the set_inputs, set_outputs, set_TPRho, and calculate methods to be run.&#39;)
+        print(&#39;  -You can also utilize the import_custom_sheets method to import custom CSV data&#39;)
+        print(&#39;  -After calculating you can use the make_plots or export_to_csv methods.&#39;)
+        print(&#39;2. run_supcrt: this initializes an inline run of SUPCRTBL&#39;)
+        print(&#39;  -After initializing the SUPCRTBL object, run calculate_supcrt to store the supcrt outputs in arrays&#39;)
+        print(&#39;  -You can also use run_supcrt on a supcrt ouput file that has already been run by adding the optional argument of the file name&#39;)
+        print(&#39;  -After this you can run make_supcrt_plots to plot the supcrt files akin the a DEW file&#39;)
+    def export_to_csv(self):
+        &#39;&#39;&#39;Exports the object&#39;s delV, delG, and logK to a CSV with pressure and temperature&#39;&#39;&#39;
+        dV = [row[0] for row in self.delV]
+        dG = [row[0] for row in self.delG]
+        lK = [row[0] for row in self.logK]
+        T = [row[1] for row in self.logK]
+        P = [row[1] for row in self.logK]
+        output_array = np.column_stack([T,P, dV,dG,lK])
+        df = pd.DataFrame(output_array)
+        df.columns = [&#39;Temperature&#39;,&#39;Pressure&#39;,&#39;delV&#39;,&#39;delG&#39;,&#39;LogK&#39;]
+        name = input(&#39;Input the name of the CSV file&#39;)
+        finalName = name + &#34;.csv&#34;
+        df.to_csv(finalName, index = False)
+        
     def set_inputs(self):
         &#39;&#39;&#39;Call this to set the input Arrays. This is not dependent on anything else being called first.&#39;&#39;&#39;
         # A list of integers
@@ -2171,6 +2209,54 @@ class DEWEquations:
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="DEW Documentation.aqueous_options"><code class="name flex">
+<span>def <span class="ident">aqueous_options</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns all options for aqueous species</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def aqueous_options():
+    &#39;&#39;&#39;Returns all options for aqueous species&#39;&#39;&#39;
+    for item in nameLst:
+        print(item)</code></pre>
+</details>
+</dd>
+<dt id="DEW Documentation.gas_options"><code class="name flex">
+<span>def <span class="ident">gas_options</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns all options for gasseous species</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gas_options():
+    &#39;&#39;&#39;Returns all options for gasseous species&#39;&#39;&#39;
+    for item in GasLst:
+        print(item)</code></pre>
+</details>
+</dd>
+<dt id="DEW Documentation.mineral_options"><code class="name flex">
+<span>def <span class="ident">mineral_options</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns all options for mineral species</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mineral_options():
+    &#39;&#39;&#39;Returns all options for mineral species&#39;&#39;&#39;
+    for key in mineralDictionary:
+        print(key)</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -2340,7 +2426,31 @@ class DEWEquations:
         &#39;&#39;&#39;Stores the output from calculate_supcrt&#39;&#39;&#39;
         
 
-    
+    def options(self):
+        &#39;&#39;&#39;Prints a welcome message and basic options&#39;&#39;&#39;
+        print(&#39;Welcome to DEWPython, here are the options you can run:&#39;)
+        print(&#39;1. DEW(): this initializes a Deep Earth Water Model Object&#39;)
+        print(&#39;  -The DEW object requires the set_inputs, set_outputs, set_TPRho, and calculate methods to be run.&#39;)
+        print(&#39;  -You can also utilize the import_custom_sheets method to import custom CSV data&#39;)
+        print(&#39;  -After calculating you can use the make_plots or export_to_csv methods.&#39;)
+        print(&#39;2. run_supcrt: this initializes an inline run of SUPCRTBL&#39;)
+        print(&#39;  -After initializing the SUPCRTBL object, run calculate_supcrt to store the supcrt outputs in arrays&#39;)
+        print(&#39;  -You can also use run_supcrt on a supcrt ouput file that has already been run by adding the optional argument of the file name&#39;)
+        print(&#39;  -After this you can run make_supcrt_plots to plot the supcrt files akin the a DEW file&#39;)
+    def export_to_csv(self):
+        &#39;&#39;&#39;Exports the object&#39;s delV, delG, and logK to a CSV with pressure and temperature&#39;&#39;&#39;
+        dV = [row[0] for row in self.delV]
+        dG = [row[0] for row in self.delG]
+        lK = [row[0] for row in self.logK]
+        T = [row[1] for row in self.logK]
+        P = [row[1] for row in self.logK]
+        output_array = np.column_stack([T,P, dV,dG,lK])
+        df = pd.DataFrame(output_array)
+        df.columns = [&#39;Temperature&#39;,&#39;Pressure&#39;,&#39;delV&#39;,&#39;delG&#39;,&#39;LogK&#39;]
+        name = input(&#39;Input the name of the CSV file&#39;)
+        finalName = name + &#34;.csv&#34;
+        df.to_csv(finalName, index = False)
+        
     def set_inputs(self):
         &#39;&#39;&#39;Call this to set the input Arrays. This is not dependent on anything else being called first.&#39;&#39;&#39;
         # A list of integers
@@ -4200,6 +4310,30 @@ stopping temperature and pressure to allow the program to calculate properly.</p
         self.supcrtOut = returnLst</code></pre>
 </details>
 </dd>
+<dt id="DEW Documentation.DEW.export_to_csv"><code class="name flex">
+<span>def <span class="ident">export_to_csv</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Exports the object's delV, delG, and logK to a CSV with pressure and temperature</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def export_to_csv(self):
+    &#39;&#39;&#39;Exports the object&#39;s delV, delG, and logK to a CSV with pressure and temperature&#39;&#39;&#39;
+    dV = [row[0] for row in self.delV]
+    dG = [row[0] for row in self.delG]
+    lK = [row[0] for row in self.logK]
+    T = [row[1] for row in self.logK]
+    P = [row[1] for row in self.logK]
+    output_array = np.column_stack([T,P, dV,dG,lK])
+    df = pd.DataFrame(output_array)
+    df.columns = [&#39;Temperature&#39;,&#39;Pressure&#39;,&#39;delV&#39;,&#39;delG&#39;,&#39;LogK&#39;]
+    name = input(&#39;Input the name of the CSV file&#39;)
+    finalName = name + &#34;.csv&#34;
+    df.to_csv(finalName, index = False)</code></pre>
+</details>
+</dd>
 <dt id="DEW Documentation.DEW.import_custom_sheets"><code class="name flex">
 <span>def <span class="ident">import_custom_sheets</span></span>(<span>self)</span>
 </code></dt>
@@ -4496,6 +4630,28 @@ This is not dependent on anything else being called first.</p></div>
         plt.ylabel(&#39;delV&#39;)
         plt.xlabel(&#39;Pressure (Kb)&#39;)
         plt.show()</code></pre>
+</details>
+</dd>
+<dt id="DEW Documentation.DEW.options"><code class="name flex">
+<span>def <span class="ident">options</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Prints a welcome message and basic options</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def options(self):
+    &#39;&#39;&#39;Prints a welcome message and basic options&#39;&#39;&#39;
+    print(&#39;Welcome to DEWPython, here are the options you can run:&#39;)
+    print(&#39;1. DEW(): this initializes a Deep Earth Water Model Object&#39;)
+    print(&#39;  -The DEW object requires the set_inputs, set_outputs, set_TPRho, and calculate methods to be run.&#39;)
+    print(&#39;  -You can also utilize the import_custom_sheets method to import custom CSV data&#39;)
+    print(&#39;  -After calculating you can use the make_plots or export_to_csv methods.&#39;)
+    print(&#39;2. run_supcrt: this initializes an inline run of SUPCRTBL&#39;)
+    print(&#39;  -After initializing the SUPCRTBL object, run calculate_supcrt to store the supcrt outputs in arrays&#39;)
+    print(&#39;  -You can also use run_supcrt on a supcrt ouput file that has already been run by adding the optional argument of the file name&#39;)
+    print(&#39;  -After this you can run make_supcrt_plots to plot the supcrt files akin the a DEW file&#39;)</code></pre>
 </details>
 </dd>
 <dt id="DEW Documentation.DEW.outLoop"><code class="name flex">
@@ -6870,6 +7026,13 @@ was not entered, zero is returned.</p></div>
 <li><code><a title="DEW Documentation.bigR" href="#DEW Documentation.bigR">bigR</a></code></li>
 </ul>
 </li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="DEW Documentation.aqueous_options" href="#DEW Documentation.aqueous_options">aqueous_options</a></code></li>
+<li><code><a title="DEW Documentation.gas_options" href="#DEW Documentation.gas_options">gas_options</a></code></li>
+<li><code><a title="DEW Documentation.mineral_options" href="#DEW Documentation.mineral_options">mineral_options</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
@@ -6908,6 +7071,7 @@ was not entered, zero is returned.</p></div>
 <li><code><a title="DEW Documentation.DEW.dielectricCollection" href="#DEW Documentation.DEW.dielectricCollection">dielectricCollection</a></code></li>
 <li><code><a title="DEW Documentation.DEW.dielectricEq" href="#DEW Documentation.DEW.dielectricEq">dielectricEq</a></code></li>
 <li><code><a title="DEW Documentation.DEW.equation" href="#DEW Documentation.DEW.equation">equation</a></code></li>
+<li><code><a title="DEW Documentation.DEW.export_to_csv" href="#DEW Documentation.DEW.export_to_csv">export_to_csv</a></code></li>
 <li><code><a title="DEW Documentation.DEW.forceCustom" href="#DEW Documentation.DEW.forceCustom">forceCustom</a></code></li>
 <li><code><a title="DEW Documentation.DEW.gasInpGibbs" href="#DEW Documentation.DEW.gasInpGibbs">gasInpGibbs</a></code></li>
 <li><code><a title="DEW Documentation.DEW.gasInpV" href="#DEW Documentation.DEW.gasInpV">gasInpV</a></code></li>
@@ -6930,6 +7094,7 @@ was not entered, zero is returned.</p></div>
 <li><code><a title="DEW Documentation.DEW.mineralsVInp" href="#DEW Documentation.DEW.mineralsVInp">mineralsVInp</a></code></li>
 <li><code><a title="DEW Documentation.DEW.mineralsVOutput" href="#DEW Documentation.DEW.mineralsVOutput">mineralsVOutput</a></code></li>
 <li><code><a title="DEW Documentation.DEW.myWatNumber" href="#DEW Documentation.DEW.myWatNumber">myWatNumber</a></code></li>
+<li><code><a title="DEW Documentation.DEW.options" href="#DEW Documentation.DEW.options">options</a></code></li>
 <li><code><a title="DEW Documentation.DEW.outAqMat" href="#DEW Documentation.DEW.outAqMat">outAqMat</a></code></li>
 <li><code><a title="DEW Documentation.DEW.outGasMat" href="#DEW Documentation.DEW.outGasMat">outGasMat</a></code></li>
 <li><code><a title="DEW Documentation.DEW.outLoop" href="#DEW Documentation.DEW.outLoop">outLoop</a></code></li>
