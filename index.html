@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.8.1" />
-<title>DEWDocs API documentation</title>
+<title>DEW Documentation API documentation</title>
 <meta name="description" content="" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
@@ -17,30 +17,60 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>DEWDocs</code></h1>
+<h1 class="title">Module <code>DEW Documentation</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python"># In[8]:
-def aqueous_options():
-    &#39;&#39;&#39;Prints the aqueous species options&#39;&#39;&#39;
+<pre><code class="python">global Tr, bigQ, Chi, Pr, E_PrTr, bigR, Psi, Theta, Upsilon, Conversion, mineralDictionary
+
+mineralDictionary = []
+&#39;&#39;&#39;A dictionary that stores all the minerals and allows them to be queried for use in the DEW model.&#39;&#39;&#39;
+
+bigQ = 5.903E-07
+&#39;&#39;&#39;Big Q is the 5.903E-07, and has units of bar^-1 &#39;&#39;&#39;
+Chi = -3.090E-07
+&#39;&#39;&#39;X is the constant -3.090E-07 and has units of K^-2&#39;&#39;&#39;
+T_r = 298.15
+&#39;&#39;&#39;The standard state temperature 298.15 with units K&#39;&#39;&#39;
+Pr = 1
+&#39;&#39;&#39;The standard state pressure of 1 bar&#39;&#39;&#39;
+E_PrTr = 78.47
+&#39;&#39;&#39;Epsilon_{P_rT_r} is a unitless constant with value of 78.47&#39;&#39;&#39;
+bigR = 1.9858775
+&#39;&#39;&#39;The gas constant with value 1.9858775 cal mol^-1 k^-1&#39;&#39;&#39;
+Psy = 2600
+&#39;&#39;&#39;The value of this constant is 2600 bar&#39;&#39;&#39;
+Theta = 228
+&#39;&#39;&#39;The value of this temperature is 228 Kelvin&#39;&#39;&#39;
+Upsilon = -5.79865E-05
+&#39;&#39;&#39;The value of this constant is -5.79865E-05 K^-1&#39;&#39;&#39;
+Conversion = 41.8393
+&#39;&#39;&#39;A conversion factor present in DEW publications&#39;&#39;&#39;
+
+
+# ## Importing the Aqueous Species Table from the Sheet
+
+
+# In[8]:
+def search(string):
+    &#39;&#39;&#39;A function that allows the user to search for excerpts from a species to return possible options&#39;&#39;&#39;
     for item in nameLst:
-        print(item)
-def gas_options():
-    &#39;&#39;&#39;Prints the gas species options&#39;&#39;&#39;
+        if str.lower(string) in str.lower(item):
+            print([&#39;aq&#39;,item])
     for item in GasLst:
-        print(item)
-def mineral_options():
-    &#39;&#39;&#39;Prints the mineral species options&#39;&#39;&#39;
+        if str.lower(string) in str.lower(item):
+            print([&#39;gas&#39;,item])
     for key in mineralDictionary:
-        print(key)
+        if str.lower(string) in str.lower(item):
+            print([&#39;mineral&#39;,key])
 
 
 class DEW(object):
     def __init__(self):
+       
         # User Option Parameters
         self.ptInput = &#39;Psat&#39;
         &#39;&#39;&#39;The temperature and pressure input, options are Regular, Psat, or custom. Default is regular&#39;&#39;&#39;
@@ -69,7 +99,7 @@ class DEW(object):
         &#39;&#39;&#39;A variable that stores the number of the density of water equation. Needs to be renamed&#39;&#39;&#39;
         self.diaEq = 1
         &#39;&#39;&#39;A variable that stores the number of dielectric constant equation.&#39;&#39;&#39;
-        self.psat = False
+        self.psat = True
         &#39;&#39;&#39;A variable that stores the Psat option defined by input&#39;&#39;&#39;
         self.waterDensity = 1
         &#39;&#39;&#39;A variable that stores the number of the density of water equation.&#39;&#39;&#39;
@@ -182,6 +212,27 @@ class DEW(object):
         self.delV = []
         &#39;&#39;&#39;Stores the list of all delV values with temperatures and pressures&#39;&#39;&#39;
         
+        
+        # Variables to Help with Plotting
+        self.pressRed = []
+        &#39;&#39;&#39;Reduced pressure list with no repeats&#39;&#39;&#39;
+        self.tempRed = []
+        &#39;&#39;&#39;Reduced temperature list with no repeats&#39;&#39;&#39;
+
+        self.pLogK = []
+        &#39;&#39;&#39;LogK split into arrays with respect to the number of isobars&#39;&#39;&#39;
+        self.pDelG = []
+        &#39;&#39;&#39;DelG split into arrays with respect to the number of isobars&#39;&#39;&#39;
+        self.pDelV = []
+        &#39;&#39;&#39;DelV split into arrays with respect to the number of isobars&#39;&#39;&#39;
+        
+        self.tLogK = []
+        &#39;&#39;&#39;LogK split into arrays with respect to the number of isotherms&#39;&#39;&#39;
+        self.tDelG = []
+        &#39;&#39;&#39;DelG split into arrays with respect to the number of isotherms&#39;&#39;&#39;
+        self.tDelV = []
+        &#39;&#39;&#39;DelV split into arrays with respect to the number of isotherms&#39;&#39;&#39;
+        
         # Variables to run SUPCRTBL
         self.proc = None
         &#39;&#39;&#39;Needed to run supcrt&#39;&#39;&#39;
@@ -195,7 +246,11 @@ class DEW(object):
         &#39;&#39;&#39;Stores the output from calculate_supcrt&#39;&#39;&#39;
         
 
-    
+    def clear(self):
+        &#39;&#39;&#39;Clears variables&#39;&#39;&#39;
+        self.__init__()
+        return
+        
     def set_inputs(self):
         &#39;&#39;&#39;Call this to set the input Arrays. This is not dependent on anything else being called first.&#39;&#39;&#39;
         # A list of integers
@@ -208,8 +263,9 @@ class DEW(object):
         self.mineralInputs = []
         self.aqueousInputs = []
         self.gasInputs = []
+        self.waterInputs = []
         
-        while mineralCount &lt; 5:
+        while mineralCount &lt; 15:
             mineralCount += 1
             validBool = False
             while not validBool:
@@ -237,7 +293,7 @@ class DEW(object):
             self.mineralInputs.append([inp, inp2])
             
             
-        while aqCount &lt;6:
+        while aqCount &lt;15:
             aqCount += 1
             validBool = False
             while not validBool:
@@ -264,7 +320,7 @@ class DEW(object):
             self.aqueousInputs.append([inp, inp2])
             
             
-        while gasCount &lt; 3:
+        while gasCount &lt; 15:
             gasCount += 1
             validBool = False
             while not validBool:
@@ -294,12 +350,10 @@ class DEW(object):
             
             # Water
         validBool3 = False
-        self.inpWater = []
         while not validBool3:
             inpWater = input(&#39;Would you like to use water? (yes/no)&#39;)
             if inpWater in [&#39;yes&#39;, &#39;no&#39;]:
                 validBool3 = True
-                self.inpWater = inpWater
             else:
                 print(&#39;Please answer yes or no&#39;)
                 continue
@@ -331,7 +385,7 @@ class DEW(object):
         self.waterOutputs = []
 
 
-        while mineralCount &lt; 5:
+        while mineralCount &lt; 15:
             mineralCount += 1
             validBool = False
             while not validBool:
@@ -354,7 +408,7 @@ class DEW(object):
             self.mineralOutputs.append([inp, inp2])
             
             
-        while aqCount &lt;6:
+        while aqCount &lt;15:
             aqCount += 1
             validBool = False
             while not validBool:
@@ -380,7 +434,7 @@ class DEW(object):
                 break
             self.aqueousOutputs.append([inp, inp2])
             
-        while gasCount &lt; 3:
+        while gasCount &lt; 15:
             gasCount += 1
             validBool = False
             while not validBool:
@@ -520,7 +574,7 @@ class DEW(object):
             else:
                 print(&#39;Please enter one of the provided options&#39;)
         if self.WaterFreeEq == &#34;Custom&#34; or self.dielectricEq == &#34;Custom&#34; or self.RhoOfWater == &#34;Custom&#34;:
-            self.dielectricCollection, self.densityCollection, self.gibbsCollection = import_custom_sheets()
+            self.dielectricCollection, self.densityCollection, self.gibbsCollection = self.import_custom_sheets()
         return
     
     
@@ -553,7 +607,7 @@ class DEW(object):
 
         gibbsOfWater = pd.read_csv(gPath, header = None)
         gibbs = gibbsOfWater.to_numpy()
-        gibbs = gibbs[4:,1:]
+        gibbs = gibbs[3:,:]
         gibbsTrim = gibbs[1:, 1:]
         gibbsCollection = []
         for row in range(len(gibbsTrim)):
@@ -593,14 +647,14 @@ class DEW(object):
                     templow = int(input(&#39;Input the minimum temperature&#39;))
                     temphigh = int(input(&#39;Input the maximum temperature&#39;))
                     tempstep = int(input(&#39;Input the temperature step&#39;))
-                    pmin = int(input(&#39;Input the minimum pressure&#39;))
-                    pmax = int(input(&#39;Input the maximum pressure&#39;))
-                    pstep = input(&#39;Input the pressure step&#39;)
+                    pmin = float(input(&#39;Input the minimum pressure (Kb)&#39;))
+                    pmax = float(input(&#39;Input the maximum pressure (Kb)&#39;))
+                    pstep = float(input(&#39;Input the pressure step (Kb)&#39;))
                     validBool = True
                 except ValueError:
                     print(&#39;You have entered a non-integer value, please start again&#39;)
             tempArr = np.arange(start= templow, stop = temphigh + 1, step = tempstep)
-            parrHelp = np.arange(start= pmin, stop = pmax + 1, step = pstep)
+            parrHelp = np.arange(start= pmin, stop = pmax + .1, step = pstep)
             for i in range(len(parrHelp)):
                 pressArr.append([parrHelp[i]]* len(tempArr))
             pressArr = np.multiply(pressArr, 1000)
@@ -657,13 +711,16 @@ class DEW(object):
             self.diaEq = 5
         
         # write code to take in custom Rho, G, and Water Values here
+        self.densityCollection = np.asarray(self.densityCollection).astype(float)
+        self.dielectricCollection = np.asarray(self.dielectricCollection).astype(float)
+        self.gibbsCollection = np.asarray(self.gibbsCollection).astype(float)
         
         # Sets the water density array
         for i in range(len(self.pressureUsed)):        
             # For the custom array
             if self.RhoOfWater ==&#34;Custom&#34; or (self.forceCustom == True and self.pressureUsed[i] &lt; 1000):
-                idx = np.intersect1d(np.where(np.asarray(self.densityCollection) == pressureUsed[i]/1000), np.where(np.asarray(self.densityCollection) == self.tempUsed[i]))[0]
-                if not np.isnan(RhoCollection[idx][2]):
+                idx = np.intersect1d(np.where(np.asarray(self.densityCollection) == self.pressureUsed[i]/1000), np.where(np.asarray(self.densityCollection) == self.tempUsed[i]))[0]
+                if not np.isnan(self.densityCollection[idx][2]):
                     self.RhoWatArr.append(self.densityCollection[idx][2])
                 else:
                     self.RhoWatArr.append(0)
@@ -675,7 +732,7 @@ class DEW(object):
             
             # for the custom array
             if self.dielectricEq == &#34;Custom&#34;:
-                idx = np.intersect1d(np.where(np.asarray(self.dielectricCollection) == pressureUsed[i]/1000), np.where(np.asarray(self.dielectricCollection) == self.tempUsed[i]))[0]
+                idx = np.intersect1d(np.where(np.asarray(self.dielectricCollection) == self.pressureUsed[i]/1000), np.where(np.asarray(self.dielectricCollection) == self.tempUsed[i]))[0]
                 if not np.isnan(self.dielectricCollection[idx][2]):
                     self.DiaArr.append(self.dielectricCollection[idx][2])
                 else:
@@ -703,7 +760,7 @@ class DEW(object):
         # Sets up custom Gibbs of Water Array:
         if self.WaterFreeEq == &#34;Custom&#34;:
             for i in range(len(self.pressureUsed)):
-                idx = np.intersect1d(np.where(np.asarray(self.gibbsCollection) == pressureUsed[i]/1000), np.where(np.asarray(self.gibbsCollection) == self.tempUsed[i]))[0]
+                idx = np.intersect1d(np.where(np.asarray(self.gibbsCollection) == self.pressureUsed[i]/1000), np.where(np.asarray(self.gibbsCollection) == self.tempUsed[i]))[0]
                 if not np.isnan(self.gibbsCollection[idx][2]):
                     self.GibbsH2O.append(self.gibbsCollection[idx][2])
                 else:
@@ -1003,17 +1060,21 @@ class DEW(object):
         # Adding the mineral contributions if they exist, must be at the same temperatures and pressures 
         if len(self.mineralInputs) &gt; 0:
             for i in range(len(self.mineralInputs)):
+                if self.psat == False:
+                    myMinPath = mineralDictionary2
+                else: 
+                    myMinPath = mineralDictioanry
                 for temp in self.tempUsed:
-                    self.mineralInpGibbs.append(np.multiply(mineralDictionary[self.mineralInputs[i][0]][&#39;delG&#39;][mineralDictionary[self.mineralInputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
-                    self.mineralInpV.append(np.multiply(mineralDictionary[self.mineralInputs[i][0]][&#39;delV&#39;][mineralDictionary[self.mineralInputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
+                    self.mineralInpGibbs.append(np.multiply(myMinPath[self.mineralInputs[i][0]][&#39;delG&#39;][myMinPath[self.mineralInputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
+                    self.mineralInpV.append(np.multiply(myMinPath[self.mineralInputs[i][0]][&#39;delV&#39;][myMinPath[self.mineralInputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
             dG = np.sum([dG, np.sum([self.mineralInpGibbs], axis = 0)], axis = 0)
             dV = np.sum([dV, np.sum([self.mineralInpV], axis = 0)], axis = 0)     
             
         if len(self.mineralOutputs) &gt; 0:
             for i in range(len(self.mineralOutputs)):
                 for temp in self.tempUsed:
-                    self.mineralOutGibbs.append(np.multiply(mineralDictionary[self.mineralOutputs[i][0]][&#39;delG&#39;][mineralDictionary[self.mineralOutputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
-                    self.mineralOutV.append(np.multiply(mineralDictionary[self.mineralOutputs[i][0]][&#39;delV&#39;][mineralDictionary[self.mineralOutputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
+                    self.mineralOutGibbs.append(np.multiply(myMinPath[self.mineralOutputs[i][0]][&#39;delG&#39;][myMinPath[self.mineralOutputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
+                    self.mineralOutV.append(np.multiply(myMinPath[self.mineralOutputs[i][0]][&#39;delV&#39;][myMinPath[self.mineralOutputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
             dG = np.sum([dG, -np.sum([self.mineralOutGibbs],axis = 0)], axis = 0)
             dV = np.sum([dV, -np.sum([self.mineralOutV],axis = 0)], axis = 0)  
             
@@ -1024,195 +1085,371 @@ class DEW(object):
             self.logK.append([-dG[0][i]/(2.302585*self.tKelvin[i]*bigR), self.tempUsed[i], self.pressureUsed[i]])
             self.delG.append([dG[0][i], self.tempUsed[i], self.pressureUsed[i]])
             self.delV.append([dV[0][i], self.tempUsed[i], self.pressureUsed[i]])
+            
+            
+        # Sets plotting arrays for convenient plotting of isotherms/isobars    
+        if self.ptInput!= &#39;Psat&#39; or self.psat == False:
+            self.pressRed = list(set(self.pressureUsed))
+            self.tempRed = list(set(self.tempUsed))
+            self.pressRed.sort()
+            self.tempRed.sort()
+            
+            temppLogK = defaultdict(list)
+            temppDelG = defaultdict(list)
+            temppDelV = defaultdict(list)
+            temptLogK = defaultdict(list)
+            temptDelG = defaultdict(list)
+            temptDelV = defaultdict(list)
+
+            for logK, temp, pressure in self.logK:
+                temppLogK[pressure].append(logK)
+                temptLogK[temp].append(logK)
+
+            for delG, temp, pressure in a.delG:
+                temppDelG[pressure].append(delG)
+                temptDelG[temp].append(delG)
+
+            for delV, temp, pressure in a.delV:
+                temppDelV[pressure].append(delV)
+                temptDelV[temp].append(delV)
+
+            
+            for item in temppDelG:
+                self.pDelG.append(temppDelG[item])
+            for item in temppDelV:
+                self.pDelV.append(temppDelV[item])
+            for item in temppLogK:
+                self.pLogK.append(temppLogK[item])
+                
+            for item in temptDelG:
+                self.tDelG.append(temptDelG[item])
+            for item in temptDelV:
+                self.tDelV.append(temptDelV[item])
+            for item in temptLogK:
+                self.tLogK.append(temptLogK[item])
+              
         return
+
+       
+       
+###############################       
+####### Methods to auto #######        
+###############################
+
+    def set_tp(self, pt_arr):
+        &#39;&#39;&#39;Setting the PT values, but automated for the helperfunction. Can also be used to quick set tp with prompted input&#39;&#39;&#39;
+        pressArr = []
+        tempArr = []
+        self.RhoWatArr = []
+        self.DiaArr = []
+        self.QArr =[]
+        self.gibbsLst = []
+        self.logK = []
+        self.vLst = []
+        self.delG = []
+        self.delV = []
+        
+        if self.ptInput == &#34;Custom&#34;:
+            ptSheet = pd.read_excel(DEW_Location, sheet_name = &#39;Input&#39;, header = None)
+            ptFinder = ptSheet.to_numpy()
+            pressArr = ptFinder[:,79][5:]
+            tempArr = ptFinder[:,80][5:]
+            storeidx = 0
+            storeidxP = 0
+            for i in range(len(tempArr)):
+                if np.isnan(tempArr[i]) == True:
+                    storeidx = int(i)
+                    break
+            for i in range(len(pressArr)):
+                if np.isnan(pressArr[i]) == True:
+                    storeidxP = int(i)
+                    break
+
+            tempArr = tempArr[:storeidx]
+            pressArr = pressArr[:storeidxP]
+
+        elif self.ptInput == &#34;Regular&#34;:
+            try:
+                templow = pt_arr[0][0]
+                temphigh =pt_arr[0][1]
+                tempstep = pt_arr[0][2]
+                pmin = pt_arr[1][0]
+                pmax = pt_arr[1][1]
+                pstep = pt_arr[1][2]
+            except ValueError:
+                print(&#39;Your PT array is not formatted correctly. Please use the format [[tmin, tmax, tstep][pmin, pmax, pstep]]&#39;)
+            tempArr = np.arange(start= templow, stop = temphigh + 1, step = tempstep)
+            parrHelp = np.arange(start= pmin, stop = pmax + 1, step = pstep)
+            for i in range(len(parrHelp)):
+                pressArr.append([parrHelp[i]]* len(tempArr))
+            pressArr = np.multiply(pressArr, 1000)
+            tempArr = [tempArr] * len(parrHelp)
+            
+        elif self.ptInput == &#34;Psat&#34;:
+            try:
+                templow = pt_arr[0]
+                temphigh = pt_arr[1]
+                tempstep = pt_arr[2]
+                validBool = True
+            except ValueError:
+                print(&#39;Your input is not formatted correctly. Please use the format for psat of [tmin, tmax, tstep]&#39;)
+                    
+            tempArr = np.arange(start= templow, stop = temphigh + 1, step = tempstep)
+            for i in range(len(tempArr)):
+                
+                if tempArr[i] &lt; 100:
+                    pressArr.append(1)
+                else:
+                    pressArr.append(2.1650906415E-11*np.double(tempArr[i])**5 + 0.0008467019353*np.double(tempArr[i])**2 - 0.17973651666*tempArr[i] + 10.7768850763807)
+                
+        else:
+            # If I&#39;ve done the checking correctly above it should never reach this
+            raise ValueError(&#34;You have not set your options yet, please set them before continuing&#34;)
+        self.tempUsed = np.ndarray.flatten(np.asarray(tempArr))
+        self.pressureUsed = np.ndarray.flatten(np.asarray(pressArr))
+        self.tKelvin = np.add(self.tempUsed, 273.15)
+        
+        # code to set options in a way the equations can understand
+        if self.ptInput == &#34;Psat&#34;:
+            self.psat = True
+        else:
+            self.psat = False
+            
+        if self.RhoOfWater ==&#39;Z&amp;D 2005&#39;:
+            self.equation = 1
+        elif self.RhoOfWater == &#39;Z&amp;D 2009&#39;:
+            self.equation = 2
+        else:
+            self.equation = 3
+            
+        if self.dielectricEq == &#34;Supcrt&#34;:
+            self.diaEq = 1
+        elif self.dielectricEq == &#34;Franck&#34;:
+            self.diaEq = 2
+        elif self.dielectricEq == &#34;Fernandez&#34;:
+            self.diaEq = 3
+        elif self.dielectricEq == &#34;Sverjensky&#34;:
+            self.diaEq = 4
+        else:
+            self.diaEq = 5
+        
+        # write code to take in custom Rho, G, and Water Values here
+        self.densityCollection = np.asarray(self.densityCollection).astype(float)
+        self.dielectricCollection = np.asarray(self.dielectricCollection).astype(float)
+        self.gibbsCollection = np.asarray(self.gibbsCollection).astype(float)
+        
+        # Sets the water density array
+        for i in range(len(self.pressureUsed)):        
+            # For the custom array
+            if self.RhoOfWater ==&#34;Custom&#34; or (self.forceCustom == True and self.pressureUsed[i] &lt; 1000):
+                idx = np.intersect1d(np.where(np.asarray(self.densityCollection).astype(float) == self.pressureUsed[i]/1000), np.where(np.asarray(self.densityCollection).astype(float) == self.tempUsed[i]))[0]
+                if not np.isnan(self.densityCollection[idx][2]):
+                    self.RhoWatArr.append(self.densityCollection[idx][2])
+                else:
+                    self.RhoWatArr.append(0)
+            else:
+                self.RhoWatArr.append(DEWEquations.calculateDensity(self.pressureUsed[i], self.tempUsed[i], self.equation, 0.01, self.psat))
+               
+        # Sets the dielectric constant array
+        for i in range(len(self.pressureUsed)):
+            
+            # for the custom array
+            if self.dielectricEq == &#34;Custom&#34;:
+                idx = np.intersect1d(np.where(np.asarray(self.dielectricCollection).astype(float) == self.pressureUsed[i]/1000), np.where(np.asarray(self.dielectricCollection).astype(float) == self.tempUsed[i]))[0]
+                if not np.isnan(self.dielectricCollection[idx][2]):
+                    self.DiaArr.append(self.dielectricCollection[idx][2])
+                else:
+                    self.DiaArr.append(0)
+            else:
+                if self.ForceSupcrt == True and self.pressureUsed[i] &lt; 5000 and self.psat == False:
+                    self.DiaArr.append(DEWEquations.calculateEpsilon(self.RhoWatArr[i], self.tempUsed[i], 1, self.psat))
+                else:
+                    self.DiaArr.append(DEWEquations.calculateEpsilon(self.RhoWatArr[i], self.tempUsed[i], self.diaEq, self.psat))
+        
+        
+        # Sets up the Q array
+        for i in range(len(self.pressureUsed)):
+            if self.DisplayVol == True:
+                try:
+                    # Has issues with some Q, not sure if problematic
+                    self.QArr.append(float(DEWEquations.calculateQ(self.pressureUsed[i], self.tempUsed[i], self.RhoWatArr[i], self.equation, self.diaEq, self.psat))*np.double(10)**6)
+                except:
+                    self.QArr.append(0)
+            else:
+                self.QArr.append(0)
+                
+        # Sets up custom Gibbs of Water Array:
+        if self.WaterFreeEq == &#34;Custom&#34;:
+            for i in range(len(self.pressureUsed)):
+                idx = np.intersect1d(np.where(np.asarray(self.gibbsCollection).astype(float) == self.pressureUsed[i]/1000), np.where(np.asarray(self.gibbsCollection).astype(float) == self.tempUsed[i]))[0]
+                if not np.isnan(self.gibbsCollection[idx][2]):
+                    self.GibbsH2O.append(self.gibbsCollection[idx][2])
+                else:
+                    self.GibbsH2O.append(0)
+        return
+    def run(self, pt_arr, min_inp =[], aq_inp = [], g_inp = [], h2o_inp = 0, min_out = [],aq_out =[], g_out = [],h2o_out = 0, 
+        ptInp = &#39;Psat&#39;, rhoWat = &#39;Z&amp;D 2005&#39;, forceBool = False, dieEQ = &#39;Supcrt&#39;, forceSC = True, 
+        WFEQ =&#39;D&amp;H 1978&#39;, dsV = True, pdsV = True, DV = True, EQ = 1, dEQ = 1, pst = True, mWn = 1):
+        &#39;&#39;&#39;This function allows the user to bypass the input functions and just adjust the values they desire. Accepts a pressure/temperature array as input &#39;&#39;&#39;
+        if h2o_inp &gt; 0:
+            self.waterInputs = [[&#39;yes&#39;,h2o_inp]]
+        else:
+            self.waterInputs = [[&#39;no&#39;,0]]
+        if h2o_out &gt; 0:
+            self.waterOutputs = [[&#39;yes&#39;,h2o_out]]
+        else:
+            self.waterOutputs = [[&#39;no&#39;,0]]
+
+        self.mineralInputs = min_inp
+        self.aqueousInputs = aq_inp
+        self.gasInputs = g_inp
+
+        self.mineralOutputs = min_out
+        self.aqueousOutputs = aq_out
+        self.gasOutputs = g_out
+
+
+        self.ptInput = ptInp
+        self.RhoOfWater = rhoWat
+        self.forceCustom = forceBool
+        self.dielectricEq = dieEQ     
+        self.ForceSupcrt = forceSC
+        self.WaterFreeEq =  WFEQ
+        self.DisplayVolOpt = dsV
+        self.PsatDisplayVol = pdsV
+        self.DisplayVol = DV
+        self.equation = EQ
+        self.diaEq = dEQ
+        self.psat = pst
+        self.waterDensity = mWn
+
+        # to actually run:
+        self.set_tp(pt_arr)
+        self.calculate()
+        self.make_plots()
+        return
+       
+       
+ ###### MAKE PLOTS###########
     
     def make_plots(self):
-        &#39;&#39;&#39;A final function that the user calls to make the plots possible in the DEW Excel spreadsheet. &#39;&#39;&#39;
+        &#39;&#39;&#39;A final function that the user calls to make the plots possible in the Excel spreadsheet. &#39;&#39;&#39;
         plt.clf()
-        press = list(set(self.pressureUsed))
-        temper = list(set(self.tempUsed))
-    
-        press.sort()
-        temper.sort()
-        
-        pLogK = defaultdict(list)
-        pDelG = defaultdict(list)
-        pDelV = defaultdict(list)
-        tLogK = defaultdict(list)
-        tDelG = defaultdict(list)
-        tDelV = defaultdict(list)
-        
-        for logK, temp, pressure in self.logK:
-            pLogK[pressure].append(logK)
-            tLogK[temp].append(logK)
-            
-        for delG, temp, pressure in self.delG:
-            pDelG[pressure].append(delG)
-            tDelG[temp].append(delG)
-            
-        for delV, temp, pressure in self.delV:
-            pDelV[pressure].append(delV)
-            tDelV[temp].append(delV)
-            
-        # Plots for logK
-        try:
-            pKplot = sorted(pLogK.items()) # sorted by key, return a list of tuples
-            x1, y1 = zip(*pKplot) # unpack a list of pairs into two tuples
+        ###### PSAT PLOTS #######
+        if self.psat == True or self.ptInput ==&#39;Psat&#39;:
             plt.figure()
-            plt.plot(x1, y1)
-            if self.psat == False:
-                plt.legend(temper, title = &#34;Temperatures (C)&#34;)
-            plt.xlabel(&#39;Pressure (bar)&#39;)
-            plt.ylabel(&#39;LogK&#39;)
-            plt.title(&#39;Pressure vs. LogK&#39;)
-            plt.show()
-        except:
-            y1 = list(y1)
-            xlst = []
-            ylst = []
-            for i in range(len(y1)):
-                for j in range(len(y1[i])):
-                    xlst.append(x1[i])
-                    ylst.append(y1[i][j])
-            plt.plot(xlst,ylst)
+            plt.plot(self.pressureUsed, [i[0] for i in self.logK])
             plt.xlabel(&#39;Pressure (bar)&#39;)
             plt.ylabel(&#39;LogK&#39;)
             plt.title(&#39;Pressure vs. LogK Psat Curve&#39;)
-                    
-        plt.figure()
-        
-        try:
-            tKplot = sorted(tLogK.items()) # sorted by key, return a list of tuples
-            x2, y2 = zip(*tKplot) # unpack a list of pairs into two tuples
+            plt.show()
+            
             plt.figure()
-            plt.plot(x2, y2)
-            if self.psat == False:
-                plt.legend(press, title = &#34;Pressure (Bar)&#34;)
-            plt.xlabel(&#39;Temperature (C)&#39;)
+            plt.plot(self.pressureUsed, [i[0] for i in self.delG])
+            plt.xlabel(&#39;Pressure (bar)&#39;)
+            plt.ylabel(&#39;$\Delta$G&#39;)
+            plt.title(&#39;Pressure vs. $\Delta$G Psat Curve&#39;)
+            plt.show()
+            
+            plt.figure()
+            plt.plot(self.pressureUsed, [i[0] for i in self.delV])
+            plt.xlabel(&#39;Pressure (bar)&#39;)
+            plt.ylabel(&#39;$\Delta$V&#39;)
+            plt.title(&#39;Pressure vs. $\Delta$V Psat Curve&#39;)
+            plt.show()
+            
+            plt.figure()
+            plt.plot(self.tempUsed, [i[0] for i in self.logK])
+            plt.xlabel(&#39;Temperature ($^\circ$ C)&#39;)
             plt.ylabel(&#39;LogK&#39;)
-            plt.title(&#39;Temperature vs. LogK&#39;)
+            plt.title(&#39;Temperature vs. LogK Psat Curve&#39;)
             plt.show()
             
-        except:
-            y2 = list(y2)
-            xlst = []
-            ylst = []
-            for i in range(len(y2)):
-                for j in range(len(y2[i])):
-                    xlst.append(x2[i])
-                    ylst.append(y2[i][j])
-            plt.plot(xlst,ylst)
-            plt.xlabel(&#39;Temp (C)&#39;)
-            plt.ylabel(&#39;LogK&#39;)
-            plt.title(&#39;Temp vs. LogK Psat Curve&#39;)
-
-        plt.figure()
-        # Plots for delG
-        try:
-            pDelGPlot = sorted(pDelG.items()) # sorted by key, return a list of tuples
-            x3, y3 = zip(*pDelGPlot) # unpack a list of pairs into two tuples
             plt.figure()
-            plt.plot(x3, y3)
-            if self.psat == False:
-                plt.legend(temper, title = &#34;Temperatures (C)&#34;)
-            plt.xlabel(&#39;Pressure (bar)&#39;)
-            plt.ylabel(&#39;Change in Free Energy (DelG)&#39;)
-            plt.title(&#39;Pressure vs. DelG&#39;)
+            plt.plot(self.tempUsed, [i[0] for i in self.delG])
+            plt.xlabel(&#39;Temperature ($^\circ$ C)&#39;)
+            plt.ylabel(&#39;$\Delta$G&#39;)
+            plt.title(&#39;Temperature vs. $\Delta$G Psat Curve&#39;)
             plt.show()
             
-        except:
-            y3 = list(y3)
-            xlst = []
-            ylst = []
-            for i in range(len(y3)):
-                for j in range(len(y3[i])):
-                    xlst.append(x3[i])
-                    ylst.append(y3[i][j])
-            plt.plot(xlst,ylst)
-            plt.xlabel(&#39;Pressure (bar)&#39;)
-            plt.ylabel(&#39;DelG&#39;)
-            plt.title(&#39;Pressure vs. DelG Psat Curve&#39;)
-        
-        plt.figure()
-        try:
-            tDelGPlot = sorted(tDelG.items()) # sorted by key, return a list of tuples
-            x4, y4 = zip(*tDelGPlot) # unpack a list of pairs into two tuples
             plt.figure()
-            plt.plot(x4, y4)
-            if self.psat == False:
-                plt.legend(press, title = &#34;Pressure (Bar)&#34;)
-            plt.xlabel(&#39;Temperature (C)&#39;)
-            plt.ylabel(&#39;Change in Free Energy (DelG)&#39;)
-            plt.title(&#39;Temperature vs. DelG&#39;)
+            plt.plot(self.tempUsed, [i[0] for i in self.delV])
+            plt.xlabel(&#39;Temperature ($^\circ$ C)&#39;)
+            plt.ylabel(&#39;$\Delta$V&#39;)
+            plt.title(&#39;Temperature vs. $\Delta$V Psat Curve&#39;)
             plt.show()
             
-        except:
-            y4 = list(y4)
-            xlst = []
-            ylst = []
-            for i in range(len(y4)):
-                for j in range(len(y4[i])):
-                    xlst.append(x4[i])
-                    ylst.append(y4[i][j])
-            plt.plot(xlst,ylst)
-            plt.xlabel(&#39;Temp (C)&#39;)
-            plt.ylabel(&#39;DelG&#39;)
-            plt.title(&#39;Temp vs. DelG Psat Curve&#39;)
-            plt.legend(title = &#39;Psat Curve&#39;)
-        plt.figure()
-        # Plots for delV
-        try: 
-            pDelVPlot = sorted(pDelV.items()) # sorted by key, return a list of tuples
-            x5, y5 = zip(*pDelVPlot) # unpack a list of pairs into two tuples
+        ####### NON PSAT PLOTS ########    
+        else:
+            # T Plots
             plt.figure()
-            plt.plot(x5, y5)
-            if self.psat == False:
-                plt.legend(temper, title = &#34;Temperatures (C)&#34;)
-            plt.xlabel(&#39;Pressure (bar)&#39;)
-            plt.ylabel(&#39;Change in Volume (DelV)&#39;)
-            plt.title(&#39;Pressure vs. DelV&#39;)
+            for i in self.pDelG:
+                plt.plot(self.tempRed, i)
+                plt.legend(self.pressRed,bbox_to_anchor=(1.05, 1), title = &#39;Pressure (bar)&#39;, loc=&#39;upper left&#39;)
+                plt.xlabel(&#39;Temperature ($^\circ$C)&#39;)
+                plt.ylabel(&#39;$\Delta$G&#39;)
+                plt.title(&#39;Temperature vs. $\Delta$G&#39;)
             plt.show()
-        except:
-            y5 = list(y5)
-            xlst =[]
-            ylst = []
-            for i in range(len(y5)):
-                for j in range(len(y5[i])):
-                    xlst.append(x5[i])
-                    ylst.append(y5[i][j])
-            plt.plot(xlst,ylst)
-            plt.xlabel(&#39;Temp (C)&#39;)
-                    
-            plt.xlabel(&#39;Pressure (bar)&#39;)
-            plt.ylabel(&#39;DelV&#39;)
-            plt.title(&#39;Pressure vs. DelV Psat Curve&#39;)
-                    
-        plt.figure()            
-        try:
-            tDelVPlot = sorted(tDelV.items()) # sorted by key, return a list of tuples
-            x6, y6 = zip(*tDelVPlot) # unpack a list of pairs into two tuples
+                
             plt.figure()
-            plt.plot(x6, y6)
-            plt.legend(press, title = &#34;Pressure (Bar)&#34;)
-            plt.xlabel(&#39;Temperature (C)&#39;)
-            plt.ylabel(&#39;Change in Volume (DelV)&#39;)
-            plt.title(&#39;Temperature vs. DelV&#39;)
+            for i in self.pDelV:
+                plt.plot(self.tempRed, i)
+                plt.legend(self.pressRed,bbox_to_anchor=(1.05, 1), title = &#39;Pressure (bar)&#39;, loc=&#39;upper left&#39;)
+                plt.xlabel(&#39;Temperature ($^\circ$C)&#39;)
+                plt.ylabel(&#39;$\Delta$V&#39;)
+                plt.title(&#39;Temperature vs. $\Delta$V&#39;)
             plt.show()
-        except:
-            xlst = []
-            ylst = []
-            y6 = list(y6)
-            for i in range(len(y6)):
-                for j in range(len(y6[i])):
-                    xlst.append(x6[i])
-                    ylst.append(y6[i][j])
-            plt.plot(xlst,ylst)
-            plt.xlabel(&#39;Temp (C)&#39;)
-            plt.ylabel(&#39;DelV&#39;)
-            plt.title(&#39;Temp vs. DelV Psat Curve&#39;)
+                          
+            plt.figure()
+            for i in self.pLogK:
+                plt.plot(self.tempRed, i)
+                plt.legend(self.pressRed,bbox_to_anchor=(1.05, 1), title = &#39;Pressure (bar)&#39;, loc=&#39;upper left&#39;)
+                plt.xlabel(&#39;Temperature ($^\circ$C)&#39;)
+                plt.ylabel(&#39;LogK&#39;)
+                plt.title(&#39;Temperature vs. LogK&#39;)
+            plt.show()
+                          
+            # P Plots
+            plt.figure()              
+            for i in self.tDelG:
+                plt.plot(self.pressRed, i)
+                plt.legend(self.tempRed,bbox_to_anchor=(1.05, 1), title = &#39;Temperature ($^\circ$C)&#39;, loc=&#39;upper left&#39;)
+                plt.xlabel(&#39;Pressure (bar)&#39;)
+                plt.ylabel(&#39;$\Delta$G&#39;)
+                plt.title(&#39;Pressure vs. $\Delta$G&#39;)
+            plt.show()
+            
+            plt.figure()    
+            for i in self.tDelV:
+                plt.plot(self.pressRed, i)
+                plt.legend(self.tempRed,bbox_to_anchor=(1.05, 1), title = &#39;Temperature ($^\circ$C)&#39;, loc=&#39;upper left&#39;)
+                plt.xlabel(&#39;Pressure (bar)&#39;)
+                plt.ylabel(&#39;$\Delta$V&#39;)
+                plt.title(&#39;Pressure vs. $\Delta$V&#39;)
+            plt.show()
+            
+            plt.figure()              
+            for i in self.tLogK:
+                plt.plot(self.pressRed, i)
+                plt.legend(self.tempRed,bbox_to_anchor=(1.05, 1), title = &#39;Temperature ($^\circ$C)&#39;, loc=&#39;upper left&#39;)
+                plt.xlabel(&#39;Pressure (bar)&#39;)
+                plt.ylabel(&#39;LogK&#39;)
+                plt.title(&#39;Pressure vs. LogK&#39;)
+            plt.show()
         return
        
+       
+       
+       
+       
+       
+#############################       
+######### OTHER #############
+#############################       
+       
+       
     def export_to_csv(self):
+        &#39;&#39;&#39;Exports data to CSV&#39;&#39;&#39;
         dV = [row[0] for row in self.delV]
         dG = [row[0] for row in self.delG]
         lK = [row[0] for row in self.logK]
@@ -1226,6 +1463,7 @@ class DEW(object):
         df.to_csv(finalName, index = False)
         
     def options(self):
+        &#39;&#39;&#39;Prints options for DEWModel&#39;&#39;&#39;
         print(&#39;Welcome to DEWPython, here are the options you can run:&#39;)
         print(&#39;1. DEW(): this initializes a Deep Earth Water Model Object&#39;)
         print(&#39;  -The DEW object requires the set_inputs, set_outputs, set_TPRho, and calculate methods to be run.&#39;)
@@ -1235,7 +1473,19 @@ class DEW(object):
         print(&#39;  -After initializing the SUPCRTBL object, run calculate_supcrt to store the supcrt outputs in arrays&#39;)
         print(&#39;  -You can also use run_supcrt on a supcrt ouput file that has already been run by adding the optional argument of the file name&#39;)
         print(&#39;  -After this you can run make_supcrt_plots to plot the supcrt files akin the a DEW file&#39;)
-        
+   
+   
+   
+
+   
+   
+   
+   
+   
+######################################   
+####### METHODS FOR SUPCRT ###########
+######################################
+
     def outLoop(self):
         &#39;&#39;&#39;A helper function to allow SUPCRTBL to run&#39;&#39;&#39;
         running = True
@@ -1269,7 +1519,7 @@ class DEW(object):
         returnLst = {}
        
         if customFile != None:
-            filename = op.dirname(op.abspath(__file__)) + &#39;\\resources\\&#39; + customFile
+            filename = op.dirname(op.abspath(os.getcwd()))+ &#39;\\&#39; + customFile
         elif len(self.supcrtFile) ==0:
             raise ValueError(&#34;You haven&#39;t run SUPCRT yet&#34;)
         else:
@@ -1386,7 +1636,100 @@ class DEW(object):
                 subDict[&#39;delCp&#39;] = dlCpLst
                 returnLst[returnVar] = subDict
             self.supcrtOut = returnLst
+    def psat_supcrt(rxn_lst, reaction_type = &#39;psat&#39;):
+        &#39;&#39;&#39;Takes a list of reaction lists (comprised of tuples) and runs supcrt&#39;&#39;&#39;
+        for reaction in rxn_lst:
+            proc = subprocess.Popen(&#39;supcrt96.exe&#39;,stdout=subprocess.PIPE, stdin=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
+            pout = proc.stdout
+            pin = proc.stdin
+            it = 0
+            rxnVar = &#39;realReac.con&#39;
+        
+            if reaction_type != &#39;psat&#39;:
+                rxnVar = &#39;Xtend.con&#39;
+            
+            title = input(&#39;What is the title of your reaction?&#39;)
+            comm = [&#39;n&#39;, &#39;updateSlop1.dat&#39;, &#39;2&#39;, rxnVar, &#39;2&#39;, &#39;1&#39;, title]
+            for component in reaction:
+                if component[1] not in nameLst:
+                    print(str(component[1]) + &#39; is not in the slop16 database. Please check your spelling and try again. You can use the search function the query the database.&#39;)
+                else:
+                    comm.append(str(component[0]) + &#39; &#39; + component[1])
+                
+            comm.append(&#39;0&#39;)
+            comm.append(&#39;y&#39;)
+            comm.append(&#39;n&#39;)
+            comm.append(title + &#39;.txt&#39;)
+            comm.append(&#39;1&#39;)
+            comm.append(&#39;1&#39;)
+            comm.append(&#39;empty&#39;)
+
+            def outLoop():
+                running = True
+                while(running):
+                    line = pout.readline().decode(sys.stdout.encoding)
+                    running=&#39;\n&#39; in line
+
+            threading.Thread(target=outLoop).start()
+            while(proc.poll() is None): 
+                try:
+                    inp = comm[it]
+                    it += 1
+            #     inp = bytearray(input(&#39;User Input: &#39;)+&#39;\n&#39;,sys.stdin.encoding)
+                    if(proc.poll() is None):
+                        pin.write(bytearray(inp+&#39;\n&#39;,sys.stdin.encoding))
+                        pin.flush()
+                except:
+                    pass
+        return
     
+    def supcrt_inp(rxn_lst, reaction_type = &#39;psat&#39;):
+        &#39;&#39;&#39;Takes a list of reaction lists (comprised of tuples) and runs supcrt&#39;&#39;&#39;
+        for reaction in rxn_lst:
+            proc = subprocess.Popen(&#39;supcrt96.exe&#39;,stdout=subprocess.PIPE, stdin=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
+            pout = proc.stdout
+            pin = proc.stdin
+            it = 0
+            rxnVar = &#39;realReac.con&#39;
+
+            if reaction_type != &#39;psat&#39;:
+                rxnVar = &#39;Xtend.con&#39;
+
+            title = input(&#39;What is the title of your reaction?&#39;)
+            comm = [&#39;n&#39;, &#39;updateSlop1.dat&#39;, &#39;2&#39;, rxnVar, &#39;2&#39;, &#39;1&#39;, title]
+            for component in reaction:
+                if component[1] not in nameLst:
+                    print(str(component[1]) + &#39; is not in the slop16 database. Please check your spelling and try again. You can use the search function the query the database.&#39;)
+                else:
+                    comm.append(str(component[0]) + &#39; &#39; + component[1])
+
+            comm.append(&#39;0&#39;)
+            comm.append(&#39;y&#39;)
+            comm.append(&#39;n&#39;)
+            comm.append(title + &#39;.txt&#39;)
+            comm.append(&#39;1&#39;)
+            comm.append(&#39;1&#39;)
+            comm.append(&#39;empty&#39;)
+
+            def outLoop():
+                running = True
+                while(running):
+                    line = pout.readline().decode(sys.stdout.encoding)
+                    running=&#39;\n&#39; in line
+
+            threading.Thread(target=outLoop).start()
+            while(proc.poll() is None): 
+                try:
+                    inp = comm[it]
+                    it += 1
+                #     inp = bytearray(input(&#39;User Input: &#39;)+&#39;\n&#39;,sys.stdin.encoding)
+                    if(proc.poll() is None):
+                        pin.write(bytearray(inp+&#39;\n&#39;,sys.stdin.encoding))
+                        pin.flush()
+                except:
+                    pass
+        return
+        
     def calculate_supcrt(self, customFile = None):
         &#39;&#39;&#39;Calculates an output of thermodynamic properties from a SUPCRTBL output file in the same directory. User must input 
         stopping temperature and pressure to allow the program to calculate properly.
@@ -1397,12 +1740,14 @@ class DEW(object):
         max_temp = float(max_temp)
         max_press = float(max_press)
         if customFile != None:
-            filename = op.dirname(op.abspath(__file__)) + &#39;\\resources\\&#39; + customFile
+            file_Path = op.dirname(op.abspath(os.getcwd()))+ &#39;\\&#39; + customFile
         elif len(self.supcrtFile) ==0:
             raise ValueError(&#34;You haven&#39;t run SUPCRT yet&#34;)
         else:
             filename = self.supcrtFile
-        with open(filename, &#39;r&#39;) as f:
+            filePath=&#39;/&#39;.join((&#39;resources&#39;, filename))
+            file_Path =  pkg_resources.resource_filename(resource_package, filepath)
+        with open(file_Path, &#39;r&#39;) as f:
             impor = f.read()
             import_data = impor.replace(&#39;\t&#39;, &#39; &#39;)
 
@@ -1505,7 +1850,6 @@ class DEW(object):
             plt.ylabel(&#39;delV&#39;)
             plt.xlabel(&#39;Pressure (Kb)&#39;)
             plt.show()
-
 
 
 class DEWEquations:
@@ -2096,7 +2440,7 @@ class DEWEquations:
             #This represents the pressure and temperature dependent solvent function
             g = DEWEquations.calculateG(P, T, density)
             #Defines the electrostatic radius at the input P and T
-            re = reref + np.abs(Z) * g
+            re = reref + (Z) * g
             fn_return_value = eta *  ( Z * Z / re - Z /  ( 3.082 + g ) )
         return fn_return_value
     
@@ -2201,7 +2545,7 @@ class DEWEquations:
                     dfdP = - ( pow(( T - 155 )  / 300, 4.8) + 36.66666 * pow(( T - 155 )  / 300, 16) )  *  ( 3 * - 1.504956E-10 * pow(1000 - P, 2) + 4 * 5.017997E-14 * pow(1000 - P, 3) )
                 else:
                     dfdP = 0
-                fn_return_value = - b_g * DEWEquations.calculate_drhodP(density, T, equation) * g /  ( 1 - density )  - dfdP
+                fn_return_value = - b_g * calculate_drhodP(density, T, equation) * g /  ( 1 - density )  - dfdP
         return fn_return_value
     
     def calculateQ(pressure, temperature, density, densityEquation, epsilonEquation, Psat):
@@ -2253,53 +2597,77 @@ class DEWEquations:
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-variables">Global variables</h2>
+<dl>
+<dt id="DEW Documentation.Chi"><code class="name">var <span class="ident">Chi</span></code></dt>
+<dd>
+<div class="desc"><p>X is the constant -3.090E-07 and has units of K^-2</p></div>
+</dd>
+<dt id="DEW Documentation.Conversion"><code class="name">var <span class="ident">Conversion</span></code></dt>
+<dd>
+<div class="desc"><p>A conversion factor present in DEW publications</p></div>
+</dd>
+<dt id="DEW Documentation.E_PrTr"><code class="name">var <span class="ident">E_PrTr</span></code></dt>
+<dd>
+<div class="desc"><p>Epsilon_{P_rT_r} is a unitless constant with value of 78.47</p></div>
+</dd>
+<dt id="DEW Documentation.Pr"><code class="name">var <span class="ident">Pr</span></code></dt>
+<dd>
+<div class="desc"><p>The standard state pressure of 1 bar</p></div>
+</dd>
+<dt id="DEW Documentation.Psy"><code class="name">var <span class="ident">Psy</span></code></dt>
+<dd>
+<div class="desc"><p>The value of this constant is 2600 bar</p></div>
+</dd>
+<dt id="DEW Documentation.T_r"><code class="name">var <span class="ident">T_r</span></code></dt>
+<dd>
+<div class="desc"><p>The standard state temperature 298.15 with units K</p></div>
+</dd>
+<dt id="DEW Documentation.Theta"><code class="name">var <span class="ident">Theta</span></code></dt>
+<dd>
+<div class="desc"><p>The value of this temperature is 228 Kelvin</p></div>
+</dd>
+<dt id="DEW Documentation.Upsilon"><code class="name">var <span class="ident">Upsilon</span></code></dt>
+<dd>
+<div class="desc"><p>The value of this constant is -5.79865E-05 K^-1</p></div>
+</dd>
+<dt id="DEW Documentation.bigQ"><code class="name">var <span class="ident">bigQ</span></code></dt>
+<dd>
+<div class="desc"><p>Big Q is the 5.903E-07, and has units of bar^-1</p></div>
+</dd>
+<dt id="DEW Documentation.bigR"><code class="name">var <span class="ident">bigR</span></code></dt>
+<dd>
+<div class="desc"><p>The gas constant with value 1.9858775 cal mol^-1 k^-1</p></div>
+</dd>
+<dt id="DEW Documentation.mineralDictionary"><code class="name">var <span class="ident">mineralDictionary</span></code></dt>
+<dd>
+<div class="desc"><p>A dictionary that stores all the minerals and allows them to be queried for use in the DEW model.</p></div>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="DEWDocs.aqueous_options"><code class="name flex">
-<span>def <span class="ident">aqueous_options</span></span>(<span>)</span>
+<dt id="DEW Documentation.search"><code class="name flex">
+<span>def <span class="ident">search</span></span>(<span>string)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Prints the aqueous species options</p></div>
+<div class="desc"><p>A function that allows the user to search for excerpts from a species to return possible options</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def aqueous_options():
-    &#39;&#39;&#39;Prints the aqueous species options&#39;&#39;&#39;
+<pre><code class="python">def search(string):
+    &#39;&#39;&#39;A function that allows the user to search for excerpts from a species to return possible options&#39;&#39;&#39;
     for item in nameLst:
-        print(item)</code></pre>
-</details>
-</dd>
-<dt id="DEWDocs.gas_options"><code class="name flex">
-<span>def <span class="ident">gas_options</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Prints the gas species options</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def gas_options():
-    &#39;&#39;&#39;Prints the gas species options&#39;&#39;&#39;
+        if str.lower(string) in str.lower(item):
+            print([&#39;aq&#39;,item])
     for item in GasLst:
-        print(item)</code></pre>
-</details>
-</dd>
-<dt id="DEWDocs.mineral_options"><code class="name flex">
-<span>def <span class="ident">mineral_options</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Prints the mineral species options</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def mineral_options():
-    &#39;&#39;&#39;Prints the mineral species options&#39;&#39;&#39;
+        if str.lower(string) in str.lower(item):
+            print([&#39;gas&#39;,item])
     for key in mineralDictionary:
-        print(key)</code></pre>
+        if str.lower(string) in str.lower(item):
+            print([&#39;mineral&#39;,key])</code></pre>
 </details>
 </dd>
 </dl>
@@ -2307,7 +2675,7 @@ class DEWEquations:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="DEWDocs.DEW"><code class="flex name class">
+<dt id="DEW Documentation.DEW"><code class="flex name class">
 <span>class <span class="ident">DEW</span></span>
 </code></dt>
 <dd>
@@ -2318,6 +2686,7 @@ class DEWEquations:
 </summary>
 <pre><code class="python">class DEW(object):
     def __init__(self):
+       
         # User Option Parameters
         self.ptInput = &#39;Psat&#39;
         &#39;&#39;&#39;The temperature and pressure input, options are Regular, Psat, or custom. Default is regular&#39;&#39;&#39;
@@ -2346,7 +2715,7 @@ class DEWEquations:
         &#39;&#39;&#39;A variable that stores the number of the density of water equation. Needs to be renamed&#39;&#39;&#39;
         self.diaEq = 1
         &#39;&#39;&#39;A variable that stores the number of dielectric constant equation.&#39;&#39;&#39;
-        self.psat = False
+        self.psat = True
         &#39;&#39;&#39;A variable that stores the Psat option defined by input&#39;&#39;&#39;
         self.waterDensity = 1
         &#39;&#39;&#39;A variable that stores the number of the density of water equation.&#39;&#39;&#39;
@@ -2459,6 +2828,27 @@ class DEWEquations:
         self.delV = []
         &#39;&#39;&#39;Stores the list of all delV values with temperatures and pressures&#39;&#39;&#39;
         
+        
+        # Variables to Help with Plotting
+        self.pressRed = []
+        &#39;&#39;&#39;Reduced pressure list with no repeats&#39;&#39;&#39;
+        self.tempRed = []
+        &#39;&#39;&#39;Reduced temperature list with no repeats&#39;&#39;&#39;
+
+        self.pLogK = []
+        &#39;&#39;&#39;LogK split into arrays with respect to the number of isobars&#39;&#39;&#39;
+        self.pDelG = []
+        &#39;&#39;&#39;DelG split into arrays with respect to the number of isobars&#39;&#39;&#39;
+        self.pDelV = []
+        &#39;&#39;&#39;DelV split into arrays with respect to the number of isobars&#39;&#39;&#39;
+        
+        self.tLogK = []
+        &#39;&#39;&#39;LogK split into arrays with respect to the number of isotherms&#39;&#39;&#39;
+        self.tDelG = []
+        &#39;&#39;&#39;DelG split into arrays with respect to the number of isotherms&#39;&#39;&#39;
+        self.tDelV = []
+        &#39;&#39;&#39;DelV split into arrays with respect to the number of isotherms&#39;&#39;&#39;
+        
         # Variables to run SUPCRTBL
         self.proc = None
         &#39;&#39;&#39;Needed to run supcrt&#39;&#39;&#39;
@@ -2472,7 +2862,11 @@ class DEWEquations:
         &#39;&#39;&#39;Stores the output from calculate_supcrt&#39;&#39;&#39;
         
 
-    
+    def clear(self):
+        &#39;&#39;&#39;Clears variables&#39;&#39;&#39;
+        self.__init__()
+        return
+        
     def set_inputs(self):
         &#39;&#39;&#39;Call this to set the input Arrays. This is not dependent on anything else being called first.&#39;&#39;&#39;
         # A list of integers
@@ -2485,8 +2879,9 @@ class DEWEquations:
         self.mineralInputs = []
         self.aqueousInputs = []
         self.gasInputs = []
+        self.waterInputs = []
         
-        while mineralCount &lt; 5:
+        while mineralCount &lt; 15:
             mineralCount += 1
             validBool = False
             while not validBool:
@@ -2514,7 +2909,7 @@ class DEWEquations:
             self.mineralInputs.append([inp, inp2])
             
             
-        while aqCount &lt;6:
+        while aqCount &lt;15:
             aqCount += 1
             validBool = False
             while not validBool:
@@ -2541,7 +2936,7 @@ class DEWEquations:
             self.aqueousInputs.append([inp, inp2])
             
             
-        while gasCount &lt; 3:
+        while gasCount &lt; 15:
             gasCount += 1
             validBool = False
             while not validBool:
@@ -2571,12 +2966,10 @@ class DEWEquations:
             
             # Water
         validBool3 = False
-        self.inpWater = []
         while not validBool3:
             inpWater = input(&#39;Would you like to use water? (yes/no)&#39;)
             if inpWater in [&#39;yes&#39;, &#39;no&#39;]:
                 validBool3 = True
-                self.inpWater = inpWater
             else:
                 print(&#39;Please answer yes or no&#39;)
                 continue
@@ -2608,7 +3001,7 @@ class DEWEquations:
         self.waterOutputs = []
 
 
-        while mineralCount &lt; 5:
+        while mineralCount &lt; 15:
             mineralCount += 1
             validBool = False
             while not validBool:
@@ -2631,7 +3024,7 @@ class DEWEquations:
             self.mineralOutputs.append([inp, inp2])
             
             
-        while aqCount &lt;6:
+        while aqCount &lt;15:
             aqCount += 1
             validBool = False
             while not validBool:
@@ -2657,7 +3050,7 @@ class DEWEquations:
                 break
             self.aqueousOutputs.append([inp, inp2])
             
-        while gasCount &lt; 3:
+        while gasCount &lt; 15:
             gasCount += 1
             validBool = False
             while not validBool:
@@ -2797,7 +3190,7 @@ class DEWEquations:
             else:
                 print(&#39;Please enter one of the provided options&#39;)
         if self.WaterFreeEq == &#34;Custom&#34; or self.dielectricEq == &#34;Custom&#34; or self.RhoOfWater == &#34;Custom&#34;:
-            self.dielectricCollection, self.densityCollection, self.gibbsCollection = import_custom_sheets()
+            self.dielectricCollection, self.densityCollection, self.gibbsCollection = self.import_custom_sheets()
         return
     
     
@@ -2830,7 +3223,7 @@ class DEWEquations:
 
         gibbsOfWater = pd.read_csv(gPath, header = None)
         gibbs = gibbsOfWater.to_numpy()
-        gibbs = gibbs[4:,1:]
+        gibbs = gibbs[3:,:]
         gibbsTrim = gibbs[1:, 1:]
         gibbsCollection = []
         for row in range(len(gibbsTrim)):
@@ -2870,14 +3263,14 @@ class DEWEquations:
                     templow = int(input(&#39;Input the minimum temperature&#39;))
                     temphigh = int(input(&#39;Input the maximum temperature&#39;))
                     tempstep = int(input(&#39;Input the temperature step&#39;))
-                    pmin = int(input(&#39;Input the minimum pressure&#39;))
-                    pmax = int(input(&#39;Input the maximum pressure&#39;))
-                    pstep = input(&#39;Input the pressure step&#39;)
+                    pmin = float(input(&#39;Input the minimum pressure (Kb)&#39;))
+                    pmax = float(input(&#39;Input the maximum pressure (Kb)&#39;))
+                    pstep = float(input(&#39;Input the pressure step (Kb)&#39;))
                     validBool = True
                 except ValueError:
                     print(&#39;You have entered a non-integer value, please start again&#39;)
             tempArr = np.arange(start= templow, stop = temphigh + 1, step = tempstep)
-            parrHelp = np.arange(start= pmin, stop = pmax + 1, step = pstep)
+            parrHelp = np.arange(start= pmin, stop = pmax + .1, step = pstep)
             for i in range(len(parrHelp)):
                 pressArr.append([parrHelp[i]]* len(tempArr))
             pressArr = np.multiply(pressArr, 1000)
@@ -2934,13 +3327,16 @@ class DEWEquations:
             self.diaEq = 5
         
         # write code to take in custom Rho, G, and Water Values here
+        self.densityCollection = np.asarray(self.densityCollection).astype(float)
+        self.dielectricCollection = np.asarray(self.dielectricCollection).astype(float)
+        self.gibbsCollection = np.asarray(self.gibbsCollection).astype(float)
         
         # Sets the water density array
         for i in range(len(self.pressureUsed)):        
             # For the custom array
             if self.RhoOfWater ==&#34;Custom&#34; or (self.forceCustom == True and self.pressureUsed[i] &lt; 1000):
-                idx = np.intersect1d(np.where(np.asarray(self.densityCollection) == pressureUsed[i]/1000), np.where(np.asarray(self.densityCollection) == self.tempUsed[i]))[0]
-                if not np.isnan(RhoCollection[idx][2]):
+                idx = np.intersect1d(np.where(np.asarray(self.densityCollection) == self.pressureUsed[i]/1000), np.where(np.asarray(self.densityCollection) == self.tempUsed[i]))[0]
+                if not np.isnan(self.densityCollection[idx][2]):
                     self.RhoWatArr.append(self.densityCollection[idx][2])
                 else:
                     self.RhoWatArr.append(0)
@@ -2952,7 +3348,7 @@ class DEWEquations:
             
             # for the custom array
             if self.dielectricEq == &#34;Custom&#34;:
-                idx = np.intersect1d(np.where(np.asarray(self.dielectricCollection) == pressureUsed[i]/1000), np.where(np.asarray(self.dielectricCollection) == self.tempUsed[i]))[0]
+                idx = np.intersect1d(np.where(np.asarray(self.dielectricCollection) == self.pressureUsed[i]/1000), np.where(np.asarray(self.dielectricCollection) == self.tempUsed[i]))[0]
                 if not np.isnan(self.dielectricCollection[idx][2]):
                     self.DiaArr.append(self.dielectricCollection[idx][2])
                 else:
@@ -2980,7 +3376,7 @@ class DEWEquations:
         # Sets up custom Gibbs of Water Array:
         if self.WaterFreeEq == &#34;Custom&#34;:
             for i in range(len(self.pressureUsed)):
-                idx = np.intersect1d(np.where(np.asarray(self.gibbsCollection) == pressureUsed[i]/1000), np.where(np.asarray(self.gibbsCollection) == self.tempUsed[i]))[0]
+                idx = np.intersect1d(np.where(np.asarray(self.gibbsCollection) == self.pressureUsed[i]/1000), np.where(np.asarray(self.gibbsCollection) == self.tempUsed[i]))[0]
                 if not np.isnan(self.gibbsCollection[idx][2]):
                     self.GibbsH2O.append(self.gibbsCollection[idx][2])
                 else:
@@ -3280,17 +3676,21 @@ class DEWEquations:
         # Adding the mineral contributions if they exist, must be at the same temperatures and pressures 
         if len(self.mineralInputs) &gt; 0:
             for i in range(len(self.mineralInputs)):
+                if self.psat == False:
+                    myMinPath = mineralDictionary2
+                else: 
+                    myMinPath = mineralDictioanry
                 for temp in self.tempUsed:
-                    self.mineralInpGibbs.append(np.multiply(mineralDictionary[self.mineralInputs[i][0]][&#39;delG&#39;][mineralDictionary[self.mineralInputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
-                    self.mineralInpV.append(np.multiply(mineralDictionary[self.mineralInputs[i][0]][&#39;delV&#39;][mineralDictionary[self.mineralInputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
+                    self.mineralInpGibbs.append(np.multiply(myMinPath[self.mineralInputs[i][0]][&#39;delG&#39;][myMinPath[self.mineralInputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
+                    self.mineralInpV.append(np.multiply(myMinPath[self.mineralInputs[i][0]][&#39;delV&#39;][myMinPath[self.mineralInputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
             dG = np.sum([dG, np.sum([self.mineralInpGibbs], axis = 0)], axis = 0)
             dV = np.sum([dV, np.sum([self.mineralInpV], axis = 0)], axis = 0)     
             
         if len(self.mineralOutputs) &gt; 0:
             for i in range(len(self.mineralOutputs)):
                 for temp in self.tempUsed:
-                    self.mineralOutGibbs.append(np.multiply(mineralDictionary[self.mineralOutputs[i][0]][&#39;delG&#39;][mineralDictionary[self.mineralOutputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
-                    self.mineralOutV.append(np.multiply(mineralDictionary[self.mineralOutputs[i][0]][&#39;delV&#39;][mineralDictionary[self.mineralOutputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
+                    self.mineralOutGibbs.append(np.multiply(myMinPath[self.mineralOutputs[i][0]][&#39;delG&#39;][myMinPath[self.mineralOutputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
+                    self.mineralOutV.append(np.multiply(myMinPath[self.mineralOutputs[i][0]][&#39;delV&#39;][myMinPath[self.mineralOutputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
             dG = np.sum([dG, -np.sum([self.mineralOutGibbs],axis = 0)], axis = 0)
             dV = np.sum([dV, -np.sum([self.mineralOutV],axis = 0)], axis = 0)  
             
@@ -3301,195 +3701,371 @@ class DEWEquations:
             self.logK.append([-dG[0][i]/(2.302585*self.tKelvin[i]*bigR), self.tempUsed[i], self.pressureUsed[i]])
             self.delG.append([dG[0][i], self.tempUsed[i], self.pressureUsed[i]])
             self.delV.append([dV[0][i], self.tempUsed[i], self.pressureUsed[i]])
+            
+            
+        # Sets plotting arrays for convenient plotting of isotherms/isobars    
+        if self.ptInput!= &#39;Psat&#39; or self.psat == False:
+            self.pressRed = list(set(self.pressureUsed))
+            self.tempRed = list(set(self.tempUsed))
+            self.pressRed.sort()
+            self.tempRed.sort()
+            
+            temppLogK = defaultdict(list)
+            temppDelG = defaultdict(list)
+            temppDelV = defaultdict(list)
+            temptLogK = defaultdict(list)
+            temptDelG = defaultdict(list)
+            temptDelV = defaultdict(list)
+
+            for logK, temp, pressure in self.logK:
+                temppLogK[pressure].append(logK)
+                temptLogK[temp].append(logK)
+
+            for delG, temp, pressure in a.delG:
+                temppDelG[pressure].append(delG)
+                temptDelG[temp].append(delG)
+
+            for delV, temp, pressure in a.delV:
+                temppDelV[pressure].append(delV)
+                temptDelV[temp].append(delV)
+
+            
+            for item in temppDelG:
+                self.pDelG.append(temppDelG[item])
+            for item in temppDelV:
+                self.pDelV.append(temppDelV[item])
+            for item in temppLogK:
+                self.pLogK.append(temppLogK[item])
+                
+            for item in temptDelG:
+                self.tDelG.append(temptDelG[item])
+            for item in temptDelV:
+                self.tDelV.append(temptDelV[item])
+            for item in temptLogK:
+                self.tLogK.append(temptLogK[item])
+              
         return
+
+       
+       
+###############################       
+####### Methods to auto #######        
+###############################
+
+    def set_tp(self, pt_arr):
+        &#39;&#39;&#39;Setting the PT values, but automated for the helperfunction. Can also be used to quick set tp with prompted input&#39;&#39;&#39;
+        pressArr = []
+        tempArr = []
+        self.RhoWatArr = []
+        self.DiaArr = []
+        self.QArr =[]
+        self.gibbsLst = []
+        self.logK = []
+        self.vLst = []
+        self.delG = []
+        self.delV = []
+        
+        if self.ptInput == &#34;Custom&#34;:
+            ptSheet = pd.read_excel(DEW_Location, sheet_name = &#39;Input&#39;, header = None)
+            ptFinder = ptSheet.to_numpy()
+            pressArr = ptFinder[:,79][5:]
+            tempArr = ptFinder[:,80][5:]
+            storeidx = 0
+            storeidxP = 0
+            for i in range(len(tempArr)):
+                if np.isnan(tempArr[i]) == True:
+                    storeidx = int(i)
+                    break
+            for i in range(len(pressArr)):
+                if np.isnan(pressArr[i]) == True:
+                    storeidxP = int(i)
+                    break
+
+            tempArr = tempArr[:storeidx]
+            pressArr = pressArr[:storeidxP]
+
+        elif self.ptInput == &#34;Regular&#34;:
+            try:
+                templow = pt_arr[0][0]
+                temphigh =pt_arr[0][1]
+                tempstep = pt_arr[0][2]
+                pmin = pt_arr[1][0]
+                pmax = pt_arr[1][1]
+                pstep = pt_arr[1][2]
+            except ValueError:
+                print(&#39;Your PT array is not formatted correctly. Please use the format [[tmin, tmax, tstep][pmin, pmax, pstep]]&#39;)
+            tempArr = np.arange(start= templow, stop = temphigh + 1, step = tempstep)
+            parrHelp = np.arange(start= pmin, stop = pmax + 1, step = pstep)
+            for i in range(len(parrHelp)):
+                pressArr.append([parrHelp[i]]* len(tempArr))
+            pressArr = np.multiply(pressArr, 1000)
+            tempArr = [tempArr] * len(parrHelp)
+            
+        elif self.ptInput == &#34;Psat&#34;:
+            try:
+                templow = pt_arr[0]
+                temphigh = pt_arr[1]
+                tempstep = pt_arr[2]
+                validBool = True
+            except ValueError:
+                print(&#39;Your input is not formatted correctly. Please use the format for psat of [tmin, tmax, tstep]&#39;)
+                    
+            tempArr = np.arange(start= templow, stop = temphigh + 1, step = tempstep)
+            for i in range(len(tempArr)):
+                
+                if tempArr[i] &lt; 100:
+                    pressArr.append(1)
+                else:
+                    pressArr.append(2.1650906415E-11*np.double(tempArr[i])**5 + 0.0008467019353*np.double(tempArr[i])**2 - 0.17973651666*tempArr[i] + 10.7768850763807)
+                
+        else:
+            # If I&#39;ve done the checking correctly above it should never reach this
+            raise ValueError(&#34;You have not set your options yet, please set them before continuing&#34;)
+        self.tempUsed = np.ndarray.flatten(np.asarray(tempArr))
+        self.pressureUsed = np.ndarray.flatten(np.asarray(pressArr))
+        self.tKelvin = np.add(self.tempUsed, 273.15)
+        
+        # code to set options in a way the equations can understand
+        if self.ptInput == &#34;Psat&#34;:
+            self.psat = True
+        else:
+            self.psat = False
+            
+        if self.RhoOfWater ==&#39;Z&amp;D 2005&#39;:
+            self.equation = 1
+        elif self.RhoOfWater == &#39;Z&amp;D 2009&#39;:
+            self.equation = 2
+        else:
+            self.equation = 3
+            
+        if self.dielectricEq == &#34;Supcrt&#34;:
+            self.diaEq = 1
+        elif self.dielectricEq == &#34;Franck&#34;:
+            self.diaEq = 2
+        elif self.dielectricEq == &#34;Fernandez&#34;:
+            self.diaEq = 3
+        elif self.dielectricEq == &#34;Sverjensky&#34;:
+            self.diaEq = 4
+        else:
+            self.diaEq = 5
+        
+        # write code to take in custom Rho, G, and Water Values here
+        self.densityCollection = np.asarray(self.densityCollection).astype(float)
+        self.dielectricCollection = np.asarray(self.dielectricCollection).astype(float)
+        self.gibbsCollection = np.asarray(self.gibbsCollection).astype(float)
+        
+        # Sets the water density array
+        for i in range(len(self.pressureUsed)):        
+            # For the custom array
+            if self.RhoOfWater ==&#34;Custom&#34; or (self.forceCustom == True and self.pressureUsed[i] &lt; 1000):
+                idx = np.intersect1d(np.where(np.asarray(self.densityCollection).astype(float) == self.pressureUsed[i]/1000), np.where(np.asarray(self.densityCollection).astype(float) == self.tempUsed[i]))[0]
+                if not np.isnan(self.densityCollection[idx][2]):
+                    self.RhoWatArr.append(self.densityCollection[idx][2])
+                else:
+                    self.RhoWatArr.append(0)
+            else:
+                self.RhoWatArr.append(DEWEquations.calculateDensity(self.pressureUsed[i], self.tempUsed[i], self.equation, 0.01, self.psat))
+               
+        # Sets the dielectric constant array
+        for i in range(len(self.pressureUsed)):
+            
+            # for the custom array
+            if self.dielectricEq == &#34;Custom&#34;:
+                idx = np.intersect1d(np.where(np.asarray(self.dielectricCollection).astype(float) == self.pressureUsed[i]/1000), np.where(np.asarray(self.dielectricCollection).astype(float) == self.tempUsed[i]))[0]
+                if not np.isnan(self.dielectricCollection[idx][2]):
+                    self.DiaArr.append(self.dielectricCollection[idx][2])
+                else:
+                    self.DiaArr.append(0)
+            else:
+                if self.ForceSupcrt == True and self.pressureUsed[i] &lt; 5000 and self.psat == False:
+                    self.DiaArr.append(DEWEquations.calculateEpsilon(self.RhoWatArr[i], self.tempUsed[i], 1, self.psat))
+                else:
+                    self.DiaArr.append(DEWEquations.calculateEpsilon(self.RhoWatArr[i], self.tempUsed[i], self.diaEq, self.psat))
+        
+        
+        # Sets up the Q array
+        for i in range(len(self.pressureUsed)):
+            if self.DisplayVol == True:
+                try:
+                    # Has issues with some Q, not sure if problematic
+                    self.QArr.append(float(DEWEquations.calculateQ(self.pressureUsed[i], self.tempUsed[i], self.RhoWatArr[i], self.equation, self.diaEq, self.psat))*np.double(10)**6)
+                except:
+                    self.QArr.append(0)
+            else:
+                self.QArr.append(0)
+                
+        # Sets up custom Gibbs of Water Array:
+        if self.WaterFreeEq == &#34;Custom&#34;:
+            for i in range(len(self.pressureUsed)):
+                idx = np.intersect1d(np.where(np.asarray(self.gibbsCollection).astype(float) == self.pressureUsed[i]/1000), np.where(np.asarray(self.gibbsCollection).astype(float) == self.tempUsed[i]))[0]
+                if not np.isnan(self.gibbsCollection[idx][2]):
+                    self.GibbsH2O.append(self.gibbsCollection[idx][2])
+                else:
+                    self.GibbsH2O.append(0)
+        return
+    def run(self, pt_arr, min_inp =[], aq_inp = [], g_inp = [], h2o_inp = 0, min_out = [],aq_out =[], g_out = [],h2o_out = 0, 
+        ptInp = &#39;Psat&#39;, rhoWat = &#39;Z&amp;D 2005&#39;, forceBool = False, dieEQ = &#39;Supcrt&#39;, forceSC = True, 
+        WFEQ =&#39;D&amp;H 1978&#39;, dsV = True, pdsV = True, DV = True, EQ = 1, dEQ = 1, pst = True, mWn = 1):
+        &#39;&#39;&#39;This function allows the user to bypass the input functions and just adjust the values they desire. Accepts a pressure/temperature array as input &#39;&#39;&#39;
+        if h2o_inp &gt; 0:
+            self.waterInputs = [[&#39;yes&#39;,h2o_inp]]
+        else:
+            self.waterInputs = [[&#39;no&#39;,0]]
+        if h2o_out &gt; 0:
+            self.waterOutputs = [[&#39;yes&#39;,h2o_out]]
+        else:
+            self.waterOutputs = [[&#39;no&#39;,0]]
+
+        self.mineralInputs = min_inp
+        self.aqueousInputs = aq_inp
+        self.gasInputs = g_inp
+
+        self.mineralOutputs = min_out
+        self.aqueousOutputs = aq_out
+        self.gasOutputs = g_out
+
+
+        self.ptInput = ptInp
+        self.RhoOfWater = rhoWat
+        self.forceCustom = forceBool
+        self.dielectricEq = dieEQ     
+        self.ForceSupcrt = forceSC
+        self.WaterFreeEq =  WFEQ
+        self.DisplayVolOpt = dsV
+        self.PsatDisplayVol = pdsV
+        self.DisplayVol = DV
+        self.equation = EQ
+        self.diaEq = dEQ
+        self.psat = pst
+        self.waterDensity = mWn
+
+        # to actually run:
+        self.set_tp(pt_arr)
+        self.calculate()
+        self.make_plots()
+        return
+       
+       
+ ###### MAKE PLOTS###########
     
     def make_plots(self):
-        &#39;&#39;&#39;A final function that the user calls to make the plots possible in the DEW Excel spreadsheet. &#39;&#39;&#39;
+        &#39;&#39;&#39;A final function that the user calls to make the plots possible in the Excel spreadsheet. &#39;&#39;&#39;
         plt.clf()
-        press = list(set(self.pressureUsed))
-        temper = list(set(self.tempUsed))
-    
-        press.sort()
-        temper.sort()
-        
-        pLogK = defaultdict(list)
-        pDelG = defaultdict(list)
-        pDelV = defaultdict(list)
-        tLogK = defaultdict(list)
-        tDelG = defaultdict(list)
-        tDelV = defaultdict(list)
-        
-        for logK, temp, pressure in self.logK:
-            pLogK[pressure].append(logK)
-            tLogK[temp].append(logK)
-            
-        for delG, temp, pressure in self.delG:
-            pDelG[pressure].append(delG)
-            tDelG[temp].append(delG)
-            
-        for delV, temp, pressure in self.delV:
-            pDelV[pressure].append(delV)
-            tDelV[temp].append(delV)
-            
-        # Plots for logK
-        try:
-            pKplot = sorted(pLogK.items()) # sorted by key, return a list of tuples
-            x1, y1 = zip(*pKplot) # unpack a list of pairs into two tuples
+        ###### PSAT PLOTS #######
+        if self.psat == True or self.ptInput ==&#39;Psat&#39;:
             plt.figure()
-            plt.plot(x1, y1)
-            if self.psat == False:
-                plt.legend(temper, title = &#34;Temperatures (C)&#34;)
-            plt.xlabel(&#39;Pressure (bar)&#39;)
-            plt.ylabel(&#39;LogK&#39;)
-            plt.title(&#39;Pressure vs. LogK&#39;)
-            plt.show()
-        except:
-            y1 = list(y1)
-            xlst = []
-            ylst = []
-            for i in range(len(y1)):
-                for j in range(len(y1[i])):
-                    xlst.append(x1[i])
-                    ylst.append(y1[i][j])
-            plt.plot(xlst,ylst)
+            plt.plot(self.pressureUsed, [i[0] for i in self.logK])
             plt.xlabel(&#39;Pressure (bar)&#39;)
             plt.ylabel(&#39;LogK&#39;)
             plt.title(&#39;Pressure vs. LogK Psat Curve&#39;)
-                    
-        plt.figure()
-        
-        try:
-            tKplot = sorted(tLogK.items()) # sorted by key, return a list of tuples
-            x2, y2 = zip(*tKplot) # unpack a list of pairs into two tuples
+            plt.show()
+            
             plt.figure()
-            plt.plot(x2, y2)
-            if self.psat == False:
-                plt.legend(press, title = &#34;Pressure (Bar)&#34;)
-            plt.xlabel(&#39;Temperature (C)&#39;)
+            plt.plot(self.pressureUsed, [i[0] for i in self.delG])
+            plt.xlabel(&#39;Pressure (bar)&#39;)
+            plt.ylabel(&#39;$\Delta$G&#39;)
+            plt.title(&#39;Pressure vs. $\Delta$G Psat Curve&#39;)
+            plt.show()
+            
+            plt.figure()
+            plt.plot(self.pressureUsed, [i[0] for i in self.delV])
+            plt.xlabel(&#39;Pressure (bar)&#39;)
+            plt.ylabel(&#39;$\Delta$V&#39;)
+            plt.title(&#39;Pressure vs. $\Delta$V Psat Curve&#39;)
+            plt.show()
+            
+            plt.figure()
+            plt.plot(self.tempUsed, [i[0] for i in self.logK])
+            plt.xlabel(&#39;Temperature ($^\circ$ C)&#39;)
             plt.ylabel(&#39;LogK&#39;)
-            plt.title(&#39;Temperature vs. LogK&#39;)
+            plt.title(&#39;Temperature vs. LogK Psat Curve&#39;)
             plt.show()
             
-        except:
-            y2 = list(y2)
-            xlst = []
-            ylst = []
-            for i in range(len(y2)):
-                for j in range(len(y2[i])):
-                    xlst.append(x2[i])
-                    ylst.append(y2[i][j])
-            plt.plot(xlst,ylst)
-            plt.xlabel(&#39;Temp (C)&#39;)
-            plt.ylabel(&#39;LogK&#39;)
-            plt.title(&#39;Temp vs. LogK Psat Curve&#39;)
-
-        plt.figure()
-        # Plots for delG
-        try:
-            pDelGPlot = sorted(pDelG.items()) # sorted by key, return a list of tuples
-            x3, y3 = zip(*pDelGPlot) # unpack a list of pairs into two tuples
             plt.figure()
-            plt.plot(x3, y3)
-            if self.psat == False:
-                plt.legend(temper, title = &#34;Temperatures (C)&#34;)
-            plt.xlabel(&#39;Pressure (bar)&#39;)
-            plt.ylabel(&#39;Change in Free Energy (DelG)&#39;)
-            plt.title(&#39;Pressure vs. DelG&#39;)
+            plt.plot(self.tempUsed, [i[0] for i in self.delG])
+            plt.xlabel(&#39;Temperature ($^\circ$ C)&#39;)
+            plt.ylabel(&#39;$\Delta$G&#39;)
+            plt.title(&#39;Temperature vs. $\Delta$G Psat Curve&#39;)
             plt.show()
             
-        except:
-            y3 = list(y3)
-            xlst = []
-            ylst = []
-            for i in range(len(y3)):
-                for j in range(len(y3[i])):
-                    xlst.append(x3[i])
-                    ylst.append(y3[i][j])
-            plt.plot(xlst,ylst)
-            plt.xlabel(&#39;Pressure (bar)&#39;)
-            plt.ylabel(&#39;DelG&#39;)
-            plt.title(&#39;Pressure vs. DelG Psat Curve&#39;)
-        
-        plt.figure()
-        try:
-            tDelGPlot = sorted(tDelG.items()) # sorted by key, return a list of tuples
-            x4, y4 = zip(*tDelGPlot) # unpack a list of pairs into two tuples
             plt.figure()
-            plt.plot(x4, y4)
-            if self.psat == False:
-                plt.legend(press, title = &#34;Pressure (Bar)&#34;)
-            plt.xlabel(&#39;Temperature (C)&#39;)
-            plt.ylabel(&#39;Change in Free Energy (DelG)&#39;)
-            plt.title(&#39;Temperature vs. DelG&#39;)
+            plt.plot(self.tempUsed, [i[0] for i in self.delV])
+            plt.xlabel(&#39;Temperature ($^\circ$ C)&#39;)
+            plt.ylabel(&#39;$\Delta$V&#39;)
+            plt.title(&#39;Temperature vs. $\Delta$V Psat Curve&#39;)
             plt.show()
             
-        except:
-            y4 = list(y4)
-            xlst = []
-            ylst = []
-            for i in range(len(y4)):
-                for j in range(len(y4[i])):
-                    xlst.append(x4[i])
-                    ylst.append(y4[i][j])
-            plt.plot(xlst,ylst)
-            plt.xlabel(&#39;Temp (C)&#39;)
-            plt.ylabel(&#39;DelG&#39;)
-            plt.title(&#39;Temp vs. DelG Psat Curve&#39;)
-            plt.legend(title = &#39;Psat Curve&#39;)
-        plt.figure()
-        # Plots for delV
-        try: 
-            pDelVPlot = sorted(pDelV.items()) # sorted by key, return a list of tuples
-            x5, y5 = zip(*pDelVPlot) # unpack a list of pairs into two tuples
+        ####### NON PSAT PLOTS ########    
+        else:
+            # T Plots
             plt.figure()
-            plt.plot(x5, y5)
-            if self.psat == False:
-                plt.legend(temper, title = &#34;Temperatures (C)&#34;)
-            plt.xlabel(&#39;Pressure (bar)&#39;)
-            plt.ylabel(&#39;Change in Volume (DelV)&#39;)
-            plt.title(&#39;Pressure vs. DelV&#39;)
+            for i in self.pDelG:
+                plt.plot(self.tempRed, i)
+                plt.legend(self.pressRed,bbox_to_anchor=(1.05, 1), title = &#39;Pressure (bar)&#39;, loc=&#39;upper left&#39;)
+                plt.xlabel(&#39;Temperature ($^\circ$C)&#39;)
+                plt.ylabel(&#39;$\Delta$G&#39;)
+                plt.title(&#39;Temperature vs. $\Delta$G&#39;)
             plt.show()
-        except:
-            y5 = list(y5)
-            xlst =[]
-            ylst = []
-            for i in range(len(y5)):
-                for j in range(len(y5[i])):
-                    xlst.append(x5[i])
-                    ylst.append(y5[i][j])
-            plt.plot(xlst,ylst)
-            plt.xlabel(&#39;Temp (C)&#39;)
-                    
-            plt.xlabel(&#39;Pressure (bar)&#39;)
-            plt.ylabel(&#39;DelV&#39;)
-            plt.title(&#39;Pressure vs. DelV Psat Curve&#39;)
-                    
-        plt.figure()            
-        try:
-            tDelVPlot = sorted(tDelV.items()) # sorted by key, return a list of tuples
-            x6, y6 = zip(*tDelVPlot) # unpack a list of pairs into two tuples
+                
             plt.figure()
-            plt.plot(x6, y6)
-            plt.legend(press, title = &#34;Pressure (Bar)&#34;)
-            plt.xlabel(&#39;Temperature (C)&#39;)
-            plt.ylabel(&#39;Change in Volume (DelV)&#39;)
-            plt.title(&#39;Temperature vs. DelV&#39;)
+            for i in self.pDelV:
+                plt.plot(self.tempRed, i)
+                plt.legend(self.pressRed,bbox_to_anchor=(1.05, 1), title = &#39;Pressure (bar)&#39;, loc=&#39;upper left&#39;)
+                plt.xlabel(&#39;Temperature ($^\circ$C)&#39;)
+                plt.ylabel(&#39;$\Delta$V&#39;)
+                plt.title(&#39;Temperature vs. $\Delta$V&#39;)
             plt.show()
-        except:
-            xlst = []
-            ylst = []
-            y6 = list(y6)
-            for i in range(len(y6)):
-                for j in range(len(y6[i])):
-                    xlst.append(x6[i])
-                    ylst.append(y6[i][j])
-            plt.plot(xlst,ylst)
-            plt.xlabel(&#39;Temp (C)&#39;)
-            plt.ylabel(&#39;DelV&#39;)
-            plt.title(&#39;Temp vs. DelV Psat Curve&#39;)
+                          
+            plt.figure()
+            for i in self.pLogK:
+                plt.plot(self.tempRed, i)
+                plt.legend(self.pressRed,bbox_to_anchor=(1.05, 1), title = &#39;Pressure (bar)&#39;, loc=&#39;upper left&#39;)
+                plt.xlabel(&#39;Temperature ($^\circ$C)&#39;)
+                plt.ylabel(&#39;LogK&#39;)
+                plt.title(&#39;Temperature vs. LogK&#39;)
+            plt.show()
+                          
+            # P Plots
+            plt.figure()              
+            for i in self.tDelG:
+                plt.plot(self.pressRed, i)
+                plt.legend(self.tempRed,bbox_to_anchor=(1.05, 1), title = &#39;Temperature ($^\circ$C)&#39;, loc=&#39;upper left&#39;)
+                plt.xlabel(&#39;Pressure (bar)&#39;)
+                plt.ylabel(&#39;$\Delta$G&#39;)
+                plt.title(&#39;Pressure vs. $\Delta$G&#39;)
+            plt.show()
+            
+            plt.figure()    
+            for i in self.tDelV:
+                plt.plot(self.pressRed, i)
+                plt.legend(self.tempRed,bbox_to_anchor=(1.05, 1), title = &#39;Temperature ($^\circ$C)&#39;, loc=&#39;upper left&#39;)
+                plt.xlabel(&#39;Pressure (bar)&#39;)
+                plt.ylabel(&#39;$\Delta$V&#39;)
+                plt.title(&#39;Pressure vs. $\Delta$V&#39;)
+            plt.show()
+            
+            plt.figure()              
+            for i in self.tLogK:
+                plt.plot(self.pressRed, i)
+                plt.legend(self.tempRed,bbox_to_anchor=(1.05, 1), title = &#39;Temperature ($^\circ$C)&#39;, loc=&#39;upper left&#39;)
+                plt.xlabel(&#39;Pressure (bar)&#39;)
+                plt.ylabel(&#39;LogK&#39;)
+                plt.title(&#39;Pressure vs. LogK&#39;)
+            plt.show()
         return
        
+       
+       
+       
+       
+       
+#############################       
+######### OTHER #############
+#############################       
+       
+       
     def export_to_csv(self):
+        &#39;&#39;&#39;Exports data to CSV&#39;&#39;&#39;
         dV = [row[0] for row in self.delV]
         dG = [row[0] for row in self.delG]
         lK = [row[0] for row in self.logK]
@@ -3503,6 +4079,7 @@ class DEWEquations:
         df.to_csv(finalName, index = False)
         
     def options(self):
+        &#39;&#39;&#39;Prints options for DEWModel&#39;&#39;&#39;
         print(&#39;Welcome to DEWPython, here are the options you can run:&#39;)
         print(&#39;1. DEW(): this initializes a Deep Earth Water Model Object&#39;)
         print(&#39;  -The DEW object requires the set_inputs, set_outputs, set_TPRho, and calculate methods to be run.&#39;)
@@ -3512,7 +4089,19 @@ class DEWEquations:
         print(&#39;  -After initializing the SUPCRTBL object, run calculate_supcrt to store the supcrt outputs in arrays&#39;)
         print(&#39;  -You can also use run_supcrt on a supcrt ouput file that has already been run by adding the optional argument of the file name&#39;)
         print(&#39;  -After this you can run make_supcrt_plots to plot the supcrt files akin the a DEW file&#39;)
-        
+   
+   
+   
+
+   
+   
+   
+   
+   
+######################################   
+####### METHODS FOR SUPCRT ###########
+######################################
+
     def outLoop(self):
         &#39;&#39;&#39;A helper function to allow SUPCRTBL to run&#39;&#39;&#39;
         running = True
@@ -3546,7 +4135,7 @@ class DEWEquations:
         returnLst = {}
        
         if customFile != None:
-            filename = op.dirname(op.abspath(__file__)) + &#39;\\resources\\&#39; + customFile
+            filename = op.dirname(op.abspath(os.getcwd()))+ &#39;\\&#39; + customFile
         elif len(self.supcrtFile) ==0:
             raise ValueError(&#34;You haven&#39;t run SUPCRT yet&#34;)
         else:
@@ -3663,7 +4252,100 @@ class DEWEquations:
                 subDict[&#39;delCp&#39;] = dlCpLst
                 returnLst[returnVar] = subDict
             self.supcrtOut = returnLst
+    def psat_supcrt(rxn_lst, reaction_type = &#39;psat&#39;):
+        &#39;&#39;&#39;Takes a list of reaction lists (comprised of tuples) and runs supcrt&#39;&#39;&#39;
+        for reaction in rxn_lst:
+            proc = subprocess.Popen(&#39;supcrt96.exe&#39;,stdout=subprocess.PIPE, stdin=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
+            pout = proc.stdout
+            pin = proc.stdin
+            it = 0
+            rxnVar = &#39;realReac.con&#39;
+        
+            if reaction_type != &#39;psat&#39;:
+                rxnVar = &#39;Xtend.con&#39;
+            
+            title = input(&#39;What is the title of your reaction?&#39;)
+            comm = [&#39;n&#39;, &#39;updateSlop1.dat&#39;, &#39;2&#39;, rxnVar, &#39;2&#39;, &#39;1&#39;, title]
+            for component in reaction:
+                if component[1] not in nameLst:
+                    print(str(component[1]) + &#39; is not in the slop16 database. Please check your spelling and try again. You can use the search function the query the database.&#39;)
+                else:
+                    comm.append(str(component[0]) + &#39; &#39; + component[1])
+                
+            comm.append(&#39;0&#39;)
+            comm.append(&#39;y&#39;)
+            comm.append(&#39;n&#39;)
+            comm.append(title + &#39;.txt&#39;)
+            comm.append(&#39;1&#39;)
+            comm.append(&#39;1&#39;)
+            comm.append(&#39;empty&#39;)
+
+            def outLoop():
+                running = True
+                while(running):
+                    line = pout.readline().decode(sys.stdout.encoding)
+                    running=&#39;\n&#39; in line
+
+            threading.Thread(target=outLoop).start()
+            while(proc.poll() is None): 
+                try:
+                    inp = comm[it]
+                    it += 1
+            #     inp = bytearray(input(&#39;User Input: &#39;)+&#39;\n&#39;,sys.stdin.encoding)
+                    if(proc.poll() is None):
+                        pin.write(bytearray(inp+&#39;\n&#39;,sys.stdin.encoding))
+                        pin.flush()
+                except:
+                    pass
+        return
     
+    def supcrt_inp(rxn_lst, reaction_type = &#39;psat&#39;):
+        &#39;&#39;&#39;Takes a list of reaction lists (comprised of tuples) and runs supcrt&#39;&#39;&#39;
+        for reaction in rxn_lst:
+            proc = subprocess.Popen(&#39;supcrt96.exe&#39;,stdout=subprocess.PIPE, stdin=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
+            pout = proc.stdout
+            pin = proc.stdin
+            it = 0
+            rxnVar = &#39;realReac.con&#39;
+
+            if reaction_type != &#39;psat&#39;:
+                rxnVar = &#39;Xtend.con&#39;
+
+            title = input(&#39;What is the title of your reaction?&#39;)
+            comm = [&#39;n&#39;, &#39;updateSlop1.dat&#39;, &#39;2&#39;, rxnVar, &#39;2&#39;, &#39;1&#39;, title]
+            for component in reaction:
+                if component[1] not in nameLst:
+                    print(str(component[1]) + &#39; is not in the slop16 database. Please check your spelling and try again. You can use the search function the query the database.&#39;)
+                else:
+                    comm.append(str(component[0]) + &#39; &#39; + component[1])
+
+            comm.append(&#39;0&#39;)
+            comm.append(&#39;y&#39;)
+            comm.append(&#39;n&#39;)
+            comm.append(title + &#39;.txt&#39;)
+            comm.append(&#39;1&#39;)
+            comm.append(&#39;1&#39;)
+            comm.append(&#39;empty&#39;)
+
+            def outLoop():
+                running = True
+                while(running):
+                    line = pout.readline().decode(sys.stdout.encoding)
+                    running=&#39;\n&#39; in line
+
+            threading.Thread(target=outLoop).start()
+            while(proc.poll() is None): 
+                try:
+                    inp = comm[it]
+                    it += 1
+                #     inp = bytearray(input(&#39;User Input: &#39;)+&#39;\n&#39;,sys.stdin.encoding)
+                    if(proc.poll() is None):
+                        pin.write(bytearray(inp+&#39;\n&#39;,sys.stdin.encoding))
+                        pin.flush()
+                except:
+                    pass
+        return
+        
     def calculate_supcrt(self, customFile = None):
         &#39;&#39;&#39;Calculates an output of thermodynamic properties from a SUPCRTBL output file in the same directory. User must input 
         stopping temperature and pressure to allow the program to calculate properly.
@@ -3674,12 +4356,14 @@ class DEWEquations:
         max_temp = float(max_temp)
         max_press = float(max_press)
         if customFile != None:
-            filename = op.dirname(op.abspath(__file__)) + &#39;\\resources\\&#39; + customFile
+            file_Path = op.dirname(op.abspath(os.getcwd()))+ &#39;\\&#39; + customFile
         elif len(self.supcrtFile) ==0:
             raise ValueError(&#34;You haven&#39;t run SUPCRT yet&#34;)
         else:
             filename = self.supcrtFile
-        with open(filename, &#39;r&#39;) as f:
+            filePath=&#39;/&#39;.join((&#39;resources&#39;, filename))
+            file_Path =  pkg_resources.resource_filename(resource_package, filepath)
+        with open(file_Path, &#39;r&#39;) as f:
             impor = f.read()
             import_data = impor.replace(&#39;\t&#39;, &#39; &#39;)
 
@@ -3785,255 +4469,287 @@ class DEWEquations:
 </details>
 <h3>Instance variables</h3>
 <dl>
-<dt id="DEWDocs.DEW.DiaArr"><code class="name">var <span class="ident">DiaArr</span></code></dt>
+<dt id="DEW Documentation.DEW.DiaArr"><code class="name">var <span class="ident">DiaArr</span></code></dt>
 <dd>
 <div class="desc"><p>An array set by the set_TPRho method that contains calculated dielectric constants at temp/pressure used</p></div>
 </dd>
-<dt id="DEWDocs.DEW.DisplayVol"><code class="name">var <span class="ident">DisplayVol</span></code></dt>
+<dt id="DEW Documentation.DEW.DisplayVol"><code class="name">var <span class="ident">DisplayVol</span></code></dt>
 <dd>
 <div class="desc"><p>Another display volume option. Default to true.</p></div>
 </dd>
-<dt id="DEWDocs.DEW.DisplayVolOpt"><code class="name">var <span class="ident">DisplayVolOpt</span></code></dt>
+<dt id="DEW Documentation.DEW.DisplayVolOpt"><code class="name">var <span class="ident">DisplayVolOpt</span></code></dt>
 <dd>
 <div class="desc"><p>The option to display volume, default set to true</p></div>
 </dd>
-<dt id="DEWDocs.DEW.ForceSupcrt"><code class="name">var <span class="ident">ForceSupcrt</span></code></dt>
+<dt id="DEW Documentation.DEW.ForceSupcrt"><code class="name">var <span class="ident">ForceSupcrt</span></code></dt>
 <dd>
 <div class="desc"><p>The option to force supcrt for P &lt; 5 kb. Default is set to true</p></div>
 </dd>
-<dt id="DEWDocs.DEW.GibbsH2O"><code class="name">var <span class="ident">GibbsH2O</span></code></dt>
+<dt id="DEW Documentation.DEW.GibbsH2O"><code class="name">var <span class="ident">GibbsH2O</span></code></dt>
 <dd>
 <div class="desc"><p>A collection of the gibbs of water values.</p></div>
 </dd>
-<dt id="DEWDocs.DEW.PsatDisplayVol"><code class="name">var <span class="ident">PsatDisplayVol</span></code></dt>
+<dt id="DEW Documentation.DEW.PsatDisplayVol"><code class="name">var <span class="ident">PsatDisplayVol</span></code></dt>
 <dd>
 <div class="desc"><p>The option to display volume under Psat conditions. Default is set to true.</p></div>
 </dd>
-<dt id="DEWDocs.DEW.QArr"><code class="name">var <span class="ident">QArr</span></code></dt>
+<dt id="DEW Documentation.DEW.QArr"><code class="name">var <span class="ident">QArr</span></code></dt>
 <dd>
 <div class="desc"><p>An array set by the set_TPRho method that contains calculated Q constants at temp/pressure used</p></div>
 </dd>
-<dt id="DEWDocs.DEW.RhoOfWater"><code class="name">var <span class="ident">RhoOfWater</span></code></dt>
+<dt id="DEW Documentation.DEW.RhoOfWater"><code class="name">var <span class="ident">RhoOfWater</span></code></dt>
 <dd>
 <div class="desc"><p>The density of water equation input, can be Zheng and Duan 2005, Zheng and Duan 2009, or custom. Default is Z&amp;D 2005</p></div>
 </dd>
-<dt id="DEWDocs.DEW.RhoWatArr"><code class="name">var <span class="ident">RhoWatArr</span></code></dt>
+<dt id="DEW Documentation.DEW.RhoWatArr"><code class="name">var <span class="ident">RhoWatArr</span></code></dt>
 <dd>
 <div class="desc"><p>An array set by the set_TPRho method that contains calculated water densities at the temperatures and pressures used</p></div>
 </dd>
-<dt id="DEWDocs.DEW.WaterFreeEq"><code class="name">var <span class="ident">WaterFreeEq</span></code></dt>
+<dt id="DEW Documentation.DEW.WaterFreeEq"><code class="name">var <span class="ident">WaterFreeEq</span></code></dt>
 <dd>
 <div class="desc"><p>The option for the Water free energy equation. Options are D&amp;H 1978, integral, and custom
 Default is Delaney and Hegelson 1978.</p></div>
 </dd>
-<dt id="DEWDocs.DEW.aqInpGibbs"><code class="name">var <span class="ident">aqInpGibbs</span></code></dt>
+<dt id="DEW Documentation.DEW.aqInpGibbs"><code class="name">var <span class="ident">aqInpGibbs</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the free energy changes of aqueous inputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.aqInpV"><code class="name">var <span class="ident">aqInpV</span></code></dt>
+<dt id="DEW Documentation.DEW.aqInpV"><code class="name">var <span class="ident">aqInpV</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the volume changes of aqueous inputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.aqOutGibbs"><code class="name">var <span class="ident">aqOutGibbs</span></code></dt>
+<dt id="DEW Documentation.DEW.aqOutGibbs"><code class="name">var <span class="ident">aqOutGibbs</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the free energy changes of aqueous outputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.aqOutV"><code class="name">var <span class="ident">aqOutV</span></code></dt>
+<dt id="DEW Documentation.DEW.aqOutV"><code class="name">var <span class="ident">aqOutV</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the volume changes of aqueous outputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.aqueousInputs"><code class="name">var <span class="ident">aqueousInputs</span></code></dt>
+<dt id="DEW Documentation.DEW.aqueousInputs"><code class="name">var <span class="ident">aqueousInputs</span></code></dt>
 <dd>
 <div class="desc"><p>The array of aqueous inputs and multipliers defined by a user</p></div>
 </dd>
-<dt id="DEWDocs.DEW.aqueousOutputs"><code class="name">var <span class="ident">aqueousOutputs</span></code></dt>
+<dt id="DEW Documentation.DEW.aqueousOutputs"><code class="name">var <span class="ident">aqueousOutputs</span></code></dt>
 <dd>
 <div class="desc"><p>The array of aqueous outputs and multipliers defined by a user</p></div>
 </dd>
-<dt id="DEWDocs.DEW.delG"><code class="name">var <span class="ident">delG</span></code></dt>
+<dt id="DEW Documentation.DEW.delG"><code class="name">var <span class="ident">delG</span></code></dt>
 <dd>
 <div class="desc"><p>Stores the list of all delG values with temperatures and pressures</p></div>
 </dd>
-<dt id="DEWDocs.DEW.delV"><code class="name">var <span class="ident">delV</span></code></dt>
+<dt id="DEW Documentation.DEW.delV"><code class="name">var <span class="ident">delV</span></code></dt>
 <dd>
 <div class="desc"><p>Stores the list of all delV values with temperatures and pressures</p></div>
 </dd>
-<dt id="DEWDocs.DEW.densityCollection"><code class="name">var <span class="ident">densityCollection</span></code></dt>
+<dt id="DEW Documentation.DEW.densityCollection"><code class="name">var <span class="ident">densityCollection</span></code></dt>
 <dd>
 <div class="desc"><p>If custom values are used for the density of water this will store them to be queried by the custom function</p></div>
 </dd>
-<dt id="DEWDocs.DEW.diaEq"><code class="name">var <span class="ident">diaEq</span></code></dt>
+<dt id="DEW Documentation.DEW.diaEq"><code class="name">var <span class="ident">diaEq</span></code></dt>
 <dd>
 <div class="desc"><p>A variable that stores the number of dielectric constant equation.</p></div>
 </dd>
-<dt id="DEWDocs.DEW.dielectricCollection"><code class="name">var <span class="ident">dielectricCollection</span></code></dt>
+<dt id="DEW Documentation.DEW.dielectricCollection"><code class="name">var <span class="ident">dielectricCollection</span></code></dt>
 <dd>
 <div class="desc"><p>If custom values are used for the dielectric constant this will store them to be queried by the custom function</p></div>
 </dd>
-<dt id="DEWDocs.DEW.dielectricEq"><code class="name">var <span class="ident">dielectricEq</span></code></dt>
+<dt id="DEW Documentation.DEW.dielectricEq"><code class="name">var <span class="ident">dielectricEq</span></code></dt>
 <dd>
 <div class="desc"><p>The dielectric equation input. The default is Sverjensky.</p></div>
 </dd>
-<dt id="DEWDocs.DEW.equation"><code class="name">var <span class="ident">equation</span></code></dt>
+<dt id="DEW Documentation.DEW.equation"><code class="name">var <span class="ident">equation</span></code></dt>
 <dd>
 <div class="desc"><p>A variable that stores the number of the density of water equation. Needs to be renamed</p></div>
 </dd>
-<dt id="DEWDocs.DEW.forceCustom"><code class="name">var <span class="ident">forceCustom</span></code></dt>
+<dt id="DEW Documentation.DEW.forceCustom"><code class="name">var <span class="ident">forceCustom</span></code></dt>
 <dd>
 <div class="desc"><p>The option to force custom Rho for P&lt; 1 kb. Default is False</p></div>
 </dd>
-<dt id="DEWDocs.DEW.gasInpGibbs"><code class="name">var <span class="ident">gasInpGibbs</span></code></dt>
+<dt id="DEW Documentation.DEW.gasInpGibbs"><code class="name">var <span class="ident">gasInpGibbs</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the free energy changes of gases</p></div>
 </dd>
-<dt id="DEWDocs.DEW.gasInpV"><code class="name">var <span class="ident">gasInpV</span></code></dt>
+<dt id="DEW Documentation.DEW.gasInpV"><code class="name">var <span class="ident">gasInpV</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the volume changes of gasseous inputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.gasInputs"><code class="name">var <span class="ident">gasInputs</span></code></dt>
+<dt id="DEW Documentation.DEW.gasInputs"><code class="name">var <span class="ident">gasInputs</span></code></dt>
 <dd>
 <div class="desc"><p>The array of gas inputs and multipliers defined by a user</p></div>
 </dd>
-<dt id="DEWDocs.DEW.gasOutGibbs"><code class="name">var <span class="ident">gasOutGibbs</span></code></dt>
+<dt id="DEW Documentation.DEW.gasOutGibbs"><code class="name">var <span class="ident">gasOutGibbs</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the free energy changes of gasseous inputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.gasOutV"><code class="name">var <span class="ident">gasOutV</span></code></dt>
+<dt id="DEW Documentation.DEW.gasOutV"><code class="name">var <span class="ident">gasOutV</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the volume changes of gasseous outputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.gasOutputs"><code class="name">var <span class="ident">gasOutputs</span></code></dt>
+<dt id="DEW Documentation.DEW.gasOutputs"><code class="name">var <span class="ident">gasOutputs</span></code></dt>
 <dd>
 <div class="desc"><p>The array of gas outputs and multipliers defined by a user</p></div>
 </dd>
-<dt id="DEWDocs.DEW.gibbsCollection"><code class="name">var <span class="ident">gibbsCollection</span></code></dt>
+<dt id="DEW Documentation.DEW.gibbsCollection"><code class="name">var <span class="ident">gibbsCollection</span></code></dt>
 <dd>
 <div class="desc"><p>If custom values are used for the gibbs of water this will store them to be queried by the custom function</p></div>
 </dd>
-<dt id="DEWDocs.DEW.gibbsLst"><code class="name">var <span class="ident">gibbsLst</span></code></dt>
+<dt id="DEW Documentation.DEW.gibbsLst"><code class="name">var <span class="ident">gibbsLst</span></code></dt>
 <dd>
 <div class="desc"><p>A storage variable that lists the gibbs free energy changes. Not sure if necessary</p></div>
 </dd>
-<dt id="DEWDocs.DEW.inAqMat"><code class="name">var <span class="ident">inAqMat</span></code></dt>
+<dt id="DEW Documentation.DEW.inAqMat"><code class="name">var <span class="ident">inAqMat</span></code></dt>
 <dd>
 <div class="desc"><p>A matrix that stores in aqueous inputs with their properties from the dicitonary inputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.inGasMat"><code class="name">var <span class="ident">inGasMat</span></code></dt>
+<dt id="DEW Documentation.DEW.inGasMat"><code class="name">var <span class="ident">inGasMat</span></code></dt>
 <dd>
 <div class="desc"><p>A matrix that stores in gasseous inputs with their properties from the dicitonary inputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.logK"><code class="name">var <span class="ident">logK</span></code></dt>
+<dt id="DEW Documentation.DEW.logK"><code class="name">var <span class="ident">logK</span></code></dt>
 <dd>
 <div class="desc"><p>Stores the list of all logK values with temperatures and pressures</p></div>
 </dd>
-<dt id="DEWDocs.DEW.mineralInpGibbs"><code class="name">var <span class="ident">mineralInpGibbs</span></code></dt>
+<dt id="DEW Documentation.DEW.mineralInpGibbs"><code class="name">var <span class="ident">mineralInpGibbs</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the free energy changes of mineral inputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.mineralInpV"><code class="name">var <span class="ident">mineralInpV</span></code></dt>
+<dt id="DEW Documentation.DEW.mineralInpV"><code class="name">var <span class="ident">mineralInpV</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the volume changes of mineral inputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.mineralInputs"><code class="name">var <span class="ident">mineralInputs</span></code></dt>
+<dt id="DEW Documentation.DEW.mineralInputs"><code class="name">var <span class="ident">mineralInputs</span></code></dt>
 <dd>
 <div class="desc"><p>The array of mineral inputs and multipliers defined by a user</p></div>
 </dd>
-<dt id="DEWDocs.DEW.mineralOutGibbs"><code class="name">var <span class="ident">mineralOutGibbs</span></code></dt>
+<dt id="DEW Documentation.DEW.mineralOutGibbs"><code class="name">var <span class="ident">mineralOutGibbs</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the free energy changes of mineral outputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.mineralOutV"><code class="name">var <span class="ident">mineralOutV</span></code></dt>
+<dt id="DEW Documentation.DEW.mineralOutV"><code class="name">var <span class="ident">mineralOutV</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the volume changes of mineral outputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.mineralOutputs"><code class="name">var <span class="ident">mineralOutputs</span></code></dt>
+<dt id="DEW Documentation.DEW.mineralOutputs"><code class="name">var <span class="ident">mineralOutputs</span></code></dt>
 <dd>
 <div class="desc"><p>The array of mineral outputs and multipliers defined by a user</p></div>
 </dd>
-<dt id="DEWDocs.DEW.outAqMat"><code class="name">var <span class="ident">outAqMat</span></code></dt>
+<dt id="DEW Documentation.DEW.outAqMat"><code class="name">var <span class="ident">outAqMat</span></code></dt>
 <dd>
 <div class="desc"><p>A matrix that stores in aqueous outputs with their properties from the dicitonary inputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.outGasMat"><code class="name">var <span class="ident">outGasMat</span></code></dt>
+<dt id="DEW Documentation.DEW.outGasMat"><code class="name">var <span class="ident">outGasMat</span></code></dt>
 <dd>
 <div class="desc"><p>A matrix that stores in gasseous outputs with their properties from the dicitonary inputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.pin"><code class="name">var <span class="ident">pin</span></code></dt>
+<dt id="DEW Documentation.DEW.pDelG"><code class="name">var <span class="ident">pDelG</span></code></dt>
+<dd>
+<div class="desc"><p>DelG split into arrays with respect to the number of isobars</p></div>
+</dd>
+<dt id="DEW Documentation.DEW.pDelV"><code class="name">var <span class="ident">pDelV</span></code></dt>
+<dd>
+<div class="desc"><p>DelV split into arrays with respect to the number of isobars</p></div>
+</dd>
+<dt id="DEW Documentation.DEW.pLogK"><code class="name">var <span class="ident">pLogK</span></code></dt>
+<dd>
+<div class="desc"><p>LogK split into arrays with respect to the number of isobars</p></div>
+</dd>
+<dt id="DEW Documentation.DEW.pin"><code class="name">var <span class="ident">pin</span></code></dt>
 <dd>
 <div class="desc"><p>Needed to run supcrt</p></div>
 </dd>
-<dt id="DEWDocs.DEW.pout"><code class="name">var <span class="ident">pout</span></code></dt>
+<dt id="DEW Documentation.DEW.pout"><code class="name">var <span class="ident">pout</span></code></dt>
 <dd>
 <div class="desc"><p>Needed to run supcrt</p></div>
 </dd>
-<dt id="DEWDocs.DEW.pressureUsed"><code class="name">var <span class="ident">pressureUsed</span></code></dt>
+<dt id="DEW Documentation.DEW.pressRed"><code class="name">var <span class="ident">pressRed</span></code></dt>
+<dd>
+<div class="desc"><p>Reduced pressure list with no repeats</p></div>
+</dd>
+<dt id="DEW Documentation.DEW.pressureUsed"><code class="name">var <span class="ident">pressureUsed</span></code></dt>
 <dd>
 <div class="desc"><p>An array set by the set_TPRho method that contains all the pressures used for calculation</p></div>
 </dd>
-<dt id="DEWDocs.DEW.proc"><code class="name">var <span class="ident">proc</span></code></dt>
+<dt id="DEW Documentation.DEW.proc"><code class="name">var <span class="ident">proc</span></code></dt>
 <dd>
 <div class="desc"><p>Needed to run supcrt</p></div>
 </dd>
-<dt id="DEWDocs.DEW.psat"><code class="name">var <span class="ident">psat</span></code></dt>
+<dt id="DEW Documentation.DEW.psat"><code class="name">var <span class="ident">psat</span></code></dt>
 <dd>
 <div class="desc"><p>A variable that stores the Psat option defined by input</p></div>
 </dd>
-<dt id="DEWDocs.DEW.ptInput"><code class="name">var <span class="ident">ptInput</span></code></dt>
+<dt id="DEW Documentation.DEW.ptInput"><code class="name">var <span class="ident">ptInput</span></code></dt>
 <dd>
 <div class="desc"><p>The temperature and pressure input, options are Regular, Psat, or custom. Default is regular</p></div>
 </dd>
-<dt id="DEWDocs.DEW.supcrtFile"><code class="name">var <span class="ident">supcrtFile</span></code></dt>
+<dt id="DEW Documentation.DEW.supcrtFile"><code class="name">var <span class="ident">supcrtFile</span></code></dt>
 <dd>
 <div class="desc"><p>Stores the most recently run SUPCRT file, or none if none have been run</p></div>
 </dd>
-<dt id="DEWDocs.DEW.supcrtOut"><code class="name">var <span class="ident">supcrtOut</span></code></dt>
+<dt id="DEW Documentation.DEW.supcrtOut"><code class="name">var <span class="ident">supcrtOut</span></code></dt>
 <dd>
 <div class="desc"><p>Stores the output from calculate_supcrt</p></div>
 </dd>
-<dt id="DEWDocs.DEW.tKelvin"><code class="name">var <span class="ident">tKelvin</span></code></dt>
+<dt id="DEW Documentation.DEW.tDelG"><code class="name">var <span class="ident">tDelG</span></code></dt>
+<dd>
+<div class="desc"><p>DelG split into arrays with respect to the number of isotherms</p></div>
+</dd>
+<dt id="DEW Documentation.DEW.tDelV"><code class="name">var <span class="ident">tDelV</span></code></dt>
+<dd>
+<div class="desc"><p>DelV split into arrays with respect to the number of isotherms</p></div>
+</dd>
+<dt id="DEW Documentation.DEW.tKelvin"><code class="name">var <span class="ident">tKelvin</span></code></dt>
 <dd>
 <div class="desc"><p>An array set by the set_TPRho method that contains all the temperatures used for calculation in Kelvin</p></div>
 </dd>
-<dt id="DEWDocs.DEW.tempUsed"><code class="name">var <span class="ident">tempUsed</span></code></dt>
+<dt id="DEW Documentation.DEW.tLogK"><code class="name">var <span class="ident">tLogK</span></code></dt>
+<dd>
+<div class="desc"><p>LogK split into arrays with respect to the number of isotherms</p></div>
+</dd>
+<dt id="DEW Documentation.DEW.tempRed"><code class="name">var <span class="ident">tempRed</span></code></dt>
+<dd>
+<div class="desc"><p>Reduced temperature list with no repeats</p></div>
+</dd>
+<dt id="DEW Documentation.DEW.tempUsed"><code class="name">var <span class="ident">tempUsed</span></code></dt>
 <dd>
 <div class="desc"><p>An array set by the set_TPRho method that contains all the temperatures used for calculation in celsius</p></div>
 </dd>
-<dt id="DEWDocs.DEW.vLst"><code class="name">var <span class="ident">vLst</span></code></dt>
+<dt id="DEW Documentation.DEW.vLst"><code class="name">var <span class="ident">vLst</span></code></dt>
 <dd>
 <div class="desc"><p>A storage variable that lists all the volume changes. Not sure if necessary</p></div>
 </dd>
-<dt id="DEWDocs.DEW.waterDensity"><code class="name">var <span class="ident">waterDensity</span></code></dt>
+<dt id="DEW Documentation.DEW.waterDensity"><code class="name">var <span class="ident">waterDensity</span></code></dt>
 <dd>
 <div class="desc"><p>A variable that stores the number of the density of water equation.</p></div>
 </dd>
-<dt id="DEWDocs.DEW.waterInpGibbs"><code class="name">var <span class="ident">waterInpGibbs</span></code></dt>
+<dt id="DEW Documentation.DEW.waterInpGibbs"><code class="name">var <span class="ident">waterInpGibbs</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the free energy changes of water outputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.waterInpV"><code class="name">var <span class="ident">waterInpV</span></code></dt>
+<dt id="DEW Documentation.DEW.waterInpV"><code class="name">var <span class="ident">waterInpV</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the volume changes of water inputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.waterInputs"><code class="name">var <span class="ident">waterInputs</span></code></dt>
+<dt id="DEW Documentation.DEW.waterInputs"><code class="name">var <span class="ident">waterInputs</span></code></dt>
 <dd>
 <div class="desc"><p>An array that defines if water is used in the input and hOw mUcH wAtEr?</p></div>
 </dd>
-<dt id="DEWDocs.DEW.waterOutGibbs"><code class="name">var <span class="ident">waterOutGibbs</span></code></dt>
+<dt id="DEW Documentation.DEW.waterOutGibbs"><code class="name">var <span class="ident">waterOutGibbs</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the free energy changes of water outputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.waterOutV"><code class="name">var <span class="ident">waterOutV</span></code></dt>
+<dt id="DEW Documentation.DEW.waterOutV"><code class="name">var <span class="ident">waterOutV</span></code></dt>
 <dd>
 <div class="desc"><p>Used for debugging, stores the volume changes of water outputs</p></div>
 </dd>
-<dt id="DEWDocs.DEW.waterOutputs"><code class="name">var <span class="ident">waterOutputs</span></code></dt>
+<dt id="DEW Documentation.DEW.waterOutputs"><code class="name">var <span class="ident">waterOutputs</span></code></dt>
 <dd>
 <div class="desc"><p>An array that defines if water is used in the outputand hOw mUcH wAtEr?</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="DEWDocs.DEW.calculate"><code class="name flex">
+<dt id="DEW Documentation.DEW.calculate"><code class="name flex">
 <span>def <span class="ident">calculate</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -4092,17 +4808,21 @@ Default is Delaney and Hegelson 1978.</p></div>
     # Adding the mineral contributions if they exist, must be at the same temperatures and pressures 
     if len(self.mineralInputs) &gt; 0:
         for i in range(len(self.mineralInputs)):
+            if self.psat == False:
+                myMinPath = mineralDictionary2
+            else: 
+                myMinPath = mineralDictioanry
             for temp in self.tempUsed:
-                self.mineralInpGibbs.append(np.multiply(mineralDictionary[self.mineralInputs[i][0]][&#39;delG&#39;][mineralDictionary[self.mineralInputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
-                self.mineralInpV.append(np.multiply(mineralDictionary[self.mineralInputs[i][0]][&#39;delV&#39;][mineralDictionary[self.mineralInputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
+                self.mineralInpGibbs.append(np.multiply(myMinPath[self.mineralInputs[i][0]][&#39;delG&#39;][myMinPath[self.mineralInputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
+                self.mineralInpV.append(np.multiply(myMinPath[self.mineralInputs[i][0]][&#39;delV&#39;][myMinPath[self.mineralInputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
         dG = np.sum([dG, np.sum([self.mineralInpGibbs], axis = 0)], axis = 0)
         dV = np.sum([dV, np.sum([self.mineralInpV], axis = 0)], axis = 0)     
         
     if len(self.mineralOutputs) &gt; 0:
         for i in range(len(self.mineralOutputs)):
             for temp in self.tempUsed:
-                self.mineralOutGibbs.append(np.multiply(mineralDictionary[self.mineralOutputs[i][0]][&#39;delG&#39;][mineralDictionary[self.mineralOutputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
-                self.mineralOutV.append(np.multiply(mineralDictionary[self.mineralOutputs[i][0]][&#39;delV&#39;][mineralDictionary[self.mineralOutputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
+                self.mineralOutGibbs.append(np.multiply(myMinPath[self.mineralOutputs[i][0]][&#39;delG&#39;][myMinPath[self.mineralOutputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
+                self.mineralOutV.append(np.multiply(myMinPath[self.mineralOutputs[i][0]][&#39;delV&#39;][myMinPath[self.mineralOutputs[i][0]][&#39;Temperature&#39;].index(temp)], int(self.mineralInputs[i][1]))) 
         dG = np.sum([dG, -np.sum([self.mineralOutGibbs],axis = 0)], axis = 0)
         dV = np.sum([dV, -np.sum([self.mineralOutV],axis = 0)], axis = 0)  
         
@@ -4113,10 +4833,53 @@ Default is Delaney and Hegelson 1978.</p></div>
         self.logK.append([-dG[0][i]/(2.302585*self.tKelvin[i]*bigR), self.tempUsed[i], self.pressureUsed[i]])
         self.delG.append([dG[0][i], self.tempUsed[i], self.pressureUsed[i]])
         self.delV.append([dV[0][i], self.tempUsed[i], self.pressureUsed[i]])
+        
+        
+    # Sets plotting arrays for convenient plotting of isotherms/isobars    
+    if self.ptInput!= &#39;Psat&#39; or self.psat == False:
+        self.pressRed = list(set(self.pressureUsed))
+        self.tempRed = list(set(self.tempUsed))
+        self.pressRed.sort()
+        self.tempRed.sort()
+        
+        temppLogK = defaultdict(list)
+        temppDelG = defaultdict(list)
+        temppDelV = defaultdict(list)
+        temptLogK = defaultdict(list)
+        temptDelG = defaultdict(list)
+        temptDelV = defaultdict(list)
+
+        for logK, temp, pressure in self.logK:
+            temppLogK[pressure].append(logK)
+            temptLogK[temp].append(logK)
+
+        for delG, temp, pressure in a.delG:
+            temppDelG[pressure].append(delG)
+            temptDelG[temp].append(delG)
+
+        for delV, temp, pressure in a.delV:
+            temppDelV[pressure].append(delV)
+            temptDelV[temp].append(delV)
+
+        
+        for item in temppDelG:
+            self.pDelG.append(temppDelG[item])
+        for item in temppDelV:
+            self.pDelV.append(temppDelV[item])
+        for item in temppLogK:
+            self.pLogK.append(temppLogK[item])
+            
+        for item in temptDelG:
+            self.tDelG.append(temptDelG[item])
+        for item in temptDelV:
+            self.tDelV.append(temptDelV[item])
+        for item in temptLogK:
+            self.tLogK.append(temptLogK[item])
+          
     return</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.calculate_H2O"><code class="name flex">
+<dt id="DEW Documentation.DEW.calculate_H2O"><code class="name flex">
 <span>def <span class="ident">calculate_H2O</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -4211,7 +4974,7 @@ Default is Delaney and Hegelson 1978.</p></div>
     return waterMatInGibbs, waterMatInV, waterMatOutGibbs, waterMatOutV</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.calculate_aq"><code class="name flex">
+<dt id="DEW Documentation.DEW.calculate_aq"><code class="name flex">
 <span>def <span class="ident">calculate_aq</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -4291,7 +5054,7 @@ Default is Delaney and Hegelson 1978.</p></div>
     return aqInGibbs, aqOuGibbs, aqInV, aqOuV</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.calculate_gas"><code class="name flex">
+<dt id="DEW Documentation.DEW.calculate_gas"><code class="name flex">
 <span>def <span class="ident">calculate_gas</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -4359,7 +5122,7 @@ It is called within the calculate function.</p></div>
     return gasInGibbs, gasOuGibbs, gasInV, gasOuV</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.calculate_matrices"><code class="name flex">
+<dt id="DEW Documentation.DEW.calculate_matrices"><code class="name flex">
 <span>def <span class="ident">calculate_matrices</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -4396,7 +5159,7 @@ It requires both the input and output arrays to be set up to function. It is cal
     return </code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.calculate_supcrt"><code class="name flex">
+<dt id="DEW Documentation.DEW.calculate_supcrt"><code class="name flex">
 <span>def <span class="ident">calculate_supcrt</span></span>(<span>self, customFile=None)</span>
 </code></dt>
 <dd>
@@ -4416,12 +5179,14 @@ stopping temperature and pressure to allow the program to calculate properly.</p
     max_temp = float(max_temp)
     max_press = float(max_press)
     if customFile != None:
-        filename = op.dirname(op.abspath(__file__)) + &#39;\\resources\\&#39; + customFile
+        file_Path = op.dirname(op.abspath(os.getcwd()))+ &#39;\\&#39; + customFile
     elif len(self.supcrtFile) ==0:
         raise ValueError(&#34;You haven&#39;t run SUPCRT yet&#34;)
     else:
         filename = self.supcrtFile
-    with open(filename, &#39;r&#39;) as f:
+        filePath=&#39;/&#39;.join((&#39;resources&#39;, filename))
+        file_Path =  pkg_resources.resource_filename(resource_package, filepath)
+    with open(file_Path, &#39;r&#39;) as f:
         impor = f.read()
         import_data = impor.replace(&#39;\t&#39;, &#39; &#39;)
 
@@ -4482,7 +5247,7 @@ stopping temperature and pressure to allow the program to calculate properly.</p
         self.supcrtOut = returnLst</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.calculate_supcrt_special"><code class="name flex">
+<dt id="DEW Documentation.DEW.calculate_supcrt_special"><code class="name flex">
 <span>def <span class="ident">calculate_supcrt_special</span></span>(<span>self, customFile=None)</span>
 </code></dt>
 <dd>
@@ -4496,7 +5261,7 @@ stopping temperature and pressure to allow the program to calculate properly.</p
     returnLst = {}
    
     if customFile != None:
-        filename = op.dirname(op.abspath(__file__)) + &#39;\\resources\\&#39; + customFile
+        filename = op.dirname(op.abspath(os.getcwd()))+ &#39;\\&#39; + customFile
     elif len(self.supcrtFile) ==0:
         raise ValueError(&#34;You haven&#39;t run SUPCRT yet&#34;)
     else:
@@ -4615,16 +5380,32 @@ stopping temperature and pressure to allow the program to calculate properly.</p
         self.supcrtOut = returnLst</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.export_to_csv"><code class="name flex">
+<dt id="DEW Documentation.DEW.clear"><code class="name flex">
+<span>def <span class="ident">clear</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Clears variables</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clear(self):
+    &#39;&#39;&#39;Clears variables&#39;&#39;&#39;
+    self.__init__()
+    return</code></pre>
+</details>
+</dd>
+<dt id="DEW Documentation.DEW.export_to_csv"><code class="name flex">
 <span>def <span class="ident">export_to_csv</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Exports data to CSV</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def export_to_csv(self):
+    &#39;&#39;&#39;Exports data to CSV&#39;&#39;&#39;
     dV = [row[0] for row in self.delV]
     dG = [row[0] for row in self.delG]
     lK = [row[0] for row in self.logK]
@@ -4638,7 +5419,7 @@ stopping temperature and pressure to allow the program to calculate properly.</p
     df.to_csv(finalName, index = False)</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.import_custom_sheets"><code class="name flex">
+<dt id="DEW Documentation.DEW.import_custom_sheets"><code class="name flex">
 <span>def <span class="ident">import_custom_sheets</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -4676,7 +5457,7 @@ This is not dependent on anything else being called first.</p></div>
 
     gibbsOfWater = pd.read_csv(gPath, header = None)
     gibbs = gibbsOfWater.to_numpy()
-    gibbs = gibbs[4:,1:]
+    gibbs = gibbs[3:,:]
     gibbsTrim = gibbs[1:, 1:]
     gibbsCollection = []
     for row in range(len(gibbsTrim)):
@@ -4686,203 +5467,123 @@ This is not dependent on anything else being called first.</p></div>
     return diaCollection, watDenCollection, gibbsCollection</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.make_plots"><code class="name flex">
+<dt id="DEW Documentation.DEW.make_plots"><code class="name flex">
 <span>def <span class="ident">make_plots</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A final function that the user calls to make the plots possible in the DEW Excel spreadsheet.</p></div>
+<div class="desc"><p>A final function that the user calls to make the plots possible in the Excel spreadsheet.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def make_plots(self):
-    &#39;&#39;&#39;A final function that the user calls to make the plots possible in the DEW Excel spreadsheet. &#39;&#39;&#39;
+    &#39;&#39;&#39;A final function that the user calls to make the plots possible in the Excel spreadsheet. &#39;&#39;&#39;
     plt.clf()
-    press = list(set(self.pressureUsed))
-    temper = list(set(self.tempUsed))
-
-    press.sort()
-    temper.sort()
-    
-    pLogK = defaultdict(list)
-    pDelG = defaultdict(list)
-    pDelV = defaultdict(list)
-    tLogK = defaultdict(list)
-    tDelG = defaultdict(list)
-    tDelV = defaultdict(list)
-    
-    for logK, temp, pressure in self.logK:
-        pLogK[pressure].append(logK)
-        tLogK[temp].append(logK)
-        
-    for delG, temp, pressure in self.delG:
-        pDelG[pressure].append(delG)
-        tDelG[temp].append(delG)
-        
-    for delV, temp, pressure in self.delV:
-        pDelV[pressure].append(delV)
-        tDelV[temp].append(delV)
-        
-    # Plots for logK
-    try:
-        pKplot = sorted(pLogK.items()) # sorted by key, return a list of tuples
-        x1, y1 = zip(*pKplot) # unpack a list of pairs into two tuples
+    ###### PSAT PLOTS #######
+    if self.psat == True or self.ptInput ==&#39;Psat&#39;:
         plt.figure()
-        plt.plot(x1, y1)
-        if self.psat == False:
-            plt.legend(temper, title = &#34;Temperatures (C)&#34;)
-        plt.xlabel(&#39;Pressure (bar)&#39;)
-        plt.ylabel(&#39;LogK&#39;)
-        plt.title(&#39;Pressure vs. LogK&#39;)
-        plt.show()
-    except:
-        y1 = list(y1)
-        xlst = []
-        ylst = []
-        for i in range(len(y1)):
-            for j in range(len(y1[i])):
-                xlst.append(x1[i])
-                ylst.append(y1[i][j])
-        plt.plot(xlst,ylst)
+        plt.plot(self.pressureUsed, [i[0] for i in self.logK])
         plt.xlabel(&#39;Pressure (bar)&#39;)
         plt.ylabel(&#39;LogK&#39;)
         plt.title(&#39;Pressure vs. LogK Psat Curve&#39;)
-                
-    plt.figure()
-    
-    try:
-        tKplot = sorted(tLogK.items()) # sorted by key, return a list of tuples
-        x2, y2 = zip(*tKplot) # unpack a list of pairs into two tuples
+        plt.show()
+        
         plt.figure()
-        plt.plot(x2, y2)
-        if self.psat == False:
-            plt.legend(press, title = &#34;Pressure (Bar)&#34;)
-        plt.xlabel(&#39;Temperature (C)&#39;)
+        plt.plot(self.pressureUsed, [i[0] for i in self.delG])
+        plt.xlabel(&#39;Pressure (bar)&#39;)
+        plt.ylabel(&#39;$\Delta$G&#39;)
+        plt.title(&#39;Pressure vs. $\Delta$G Psat Curve&#39;)
+        plt.show()
+        
+        plt.figure()
+        plt.plot(self.pressureUsed, [i[0] for i in self.delV])
+        plt.xlabel(&#39;Pressure (bar)&#39;)
+        plt.ylabel(&#39;$\Delta$V&#39;)
+        plt.title(&#39;Pressure vs. $\Delta$V Psat Curve&#39;)
+        plt.show()
+        
+        plt.figure()
+        plt.plot(self.tempUsed, [i[0] for i in self.logK])
+        plt.xlabel(&#39;Temperature ($^\circ$ C)&#39;)
         plt.ylabel(&#39;LogK&#39;)
-        plt.title(&#39;Temperature vs. LogK&#39;)
+        plt.title(&#39;Temperature vs. LogK Psat Curve&#39;)
         plt.show()
         
-    except:
-        y2 = list(y2)
-        xlst = []
-        ylst = []
-        for i in range(len(y2)):
-            for j in range(len(y2[i])):
-                xlst.append(x2[i])
-                ylst.append(y2[i][j])
-        plt.plot(xlst,ylst)
-        plt.xlabel(&#39;Temp (C)&#39;)
-        plt.ylabel(&#39;LogK&#39;)
-        plt.title(&#39;Temp vs. LogK Psat Curve&#39;)
-
-    plt.figure()
-    # Plots for delG
-    try:
-        pDelGPlot = sorted(pDelG.items()) # sorted by key, return a list of tuples
-        x3, y3 = zip(*pDelGPlot) # unpack a list of pairs into two tuples
         plt.figure()
-        plt.plot(x3, y3)
-        if self.psat == False:
-            plt.legend(temper, title = &#34;Temperatures (C)&#34;)
-        plt.xlabel(&#39;Pressure (bar)&#39;)
-        plt.ylabel(&#39;Change in Free Energy (DelG)&#39;)
-        plt.title(&#39;Pressure vs. DelG&#39;)
+        plt.plot(self.tempUsed, [i[0] for i in self.delG])
+        plt.xlabel(&#39;Temperature ($^\circ$ C)&#39;)
+        plt.ylabel(&#39;$\Delta$G&#39;)
+        plt.title(&#39;Temperature vs. $\Delta$G Psat Curve&#39;)
         plt.show()
         
-    except:
-        y3 = list(y3)
-        xlst = []
-        ylst = []
-        for i in range(len(y3)):
-            for j in range(len(y3[i])):
-                xlst.append(x3[i])
-                ylst.append(y3[i][j])
-        plt.plot(xlst,ylst)
-        plt.xlabel(&#39;Pressure (bar)&#39;)
-        plt.ylabel(&#39;DelG&#39;)
-        plt.title(&#39;Pressure vs. DelG Psat Curve&#39;)
-    
-    plt.figure()
-    try:
-        tDelGPlot = sorted(tDelG.items()) # sorted by key, return a list of tuples
-        x4, y4 = zip(*tDelGPlot) # unpack a list of pairs into two tuples
         plt.figure()
-        plt.plot(x4, y4)
-        if self.psat == False:
-            plt.legend(press, title = &#34;Pressure (Bar)&#34;)
-        plt.xlabel(&#39;Temperature (C)&#39;)
-        plt.ylabel(&#39;Change in Free Energy (DelG)&#39;)
-        plt.title(&#39;Temperature vs. DelG&#39;)
+        plt.plot(self.tempUsed, [i[0] for i in self.delV])
+        plt.xlabel(&#39;Temperature ($^\circ$ C)&#39;)
+        plt.ylabel(&#39;$\Delta$V&#39;)
+        plt.title(&#39;Temperature vs. $\Delta$V Psat Curve&#39;)
         plt.show()
         
-    except:
-        y4 = list(y4)
-        xlst = []
-        ylst = []
-        for i in range(len(y4)):
-            for j in range(len(y4[i])):
-                xlst.append(x4[i])
-                ylst.append(y4[i][j])
-        plt.plot(xlst,ylst)
-        plt.xlabel(&#39;Temp (C)&#39;)
-        plt.ylabel(&#39;DelG&#39;)
-        plt.title(&#39;Temp vs. DelG Psat Curve&#39;)
-        plt.legend(title = &#39;Psat Curve&#39;)
-    plt.figure()
-    # Plots for delV
-    try: 
-        pDelVPlot = sorted(pDelV.items()) # sorted by key, return a list of tuples
-        x5, y5 = zip(*pDelVPlot) # unpack a list of pairs into two tuples
+    ####### NON PSAT PLOTS ########    
+    else:
+        # T Plots
         plt.figure()
-        plt.plot(x5, y5)
-        if self.psat == False:
-            plt.legend(temper, title = &#34;Temperatures (C)&#34;)
-        plt.xlabel(&#39;Pressure (bar)&#39;)
-        plt.ylabel(&#39;Change in Volume (DelV)&#39;)
-        plt.title(&#39;Pressure vs. DelV&#39;)
+        for i in self.pDelG:
+            plt.plot(self.tempRed, i)
+            plt.legend(self.pressRed,bbox_to_anchor=(1.05, 1), title = &#39;Pressure (bar)&#39;, loc=&#39;upper left&#39;)
+            plt.xlabel(&#39;Temperature ($^\circ$C)&#39;)
+            plt.ylabel(&#39;$\Delta$G&#39;)
+            plt.title(&#39;Temperature vs. $\Delta$G&#39;)
         plt.show()
-    except:
-        y5 = list(y5)
-        xlst =[]
-        ylst = []
-        for i in range(len(y5)):
-            for j in range(len(y5[i])):
-                xlst.append(x5[i])
-                ylst.append(y5[i][j])
-        plt.plot(xlst,ylst)
-        plt.xlabel(&#39;Temp (C)&#39;)
-                
-        plt.xlabel(&#39;Pressure (bar)&#39;)
-        plt.ylabel(&#39;DelV&#39;)
-        plt.title(&#39;Pressure vs. DelV Psat Curve&#39;)
-                
-    plt.figure()            
-    try:
-        tDelVPlot = sorted(tDelV.items()) # sorted by key, return a list of tuples
-        x6, y6 = zip(*tDelVPlot) # unpack a list of pairs into two tuples
+            
         plt.figure()
-        plt.plot(x6, y6)
-        plt.legend(press, title = &#34;Pressure (Bar)&#34;)
-        plt.xlabel(&#39;Temperature (C)&#39;)
-        plt.ylabel(&#39;Change in Volume (DelV)&#39;)
-        plt.title(&#39;Temperature vs. DelV&#39;)
+        for i in self.pDelV:
+            plt.plot(self.tempRed, i)
+            plt.legend(self.pressRed,bbox_to_anchor=(1.05, 1), title = &#39;Pressure (bar)&#39;, loc=&#39;upper left&#39;)
+            plt.xlabel(&#39;Temperature ($^\circ$C)&#39;)
+            plt.ylabel(&#39;$\Delta$V&#39;)
+            plt.title(&#39;Temperature vs. $\Delta$V&#39;)
         plt.show()
-    except:
-        xlst = []
-        ylst = []
-        y6 = list(y6)
-        for i in range(len(y6)):
-            for j in range(len(y6[i])):
-                xlst.append(x6[i])
-                ylst.append(y6[i][j])
-        plt.plot(xlst,ylst)
-        plt.xlabel(&#39;Temp (C)&#39;)
-        plt.ylabel(&#39;DelV&#39;)
-        plt.title(&#39;Temp vs. DelV Psat Curve&#39;)
+                      
+        plt.figure()
+        for i in self.pLogK:
+            plt.plot(self.tempRed, i)
+            plt.legend(self.pressRed,bbox_to_anchor=(1.05, 1), title = &#39;Pressure (bar)&#39;, loc=&#39;upper left&#39;)
+            plt.xlabel(&#39;Temperature ($^\circ$C)&#39;)
+            plt.ylabel(&#39;LogK&#39;)
+            plt.title(&#39;Temperature vs. LogK&#39;)
+        plt.show()
+                      
+        # P Plots
+        plt.figure()              
+        for i in self.tDelG:
+            plt.plot(self.pressRed, i)
+            plt.legend(self.tempRed,bbox_to_anchor=(1.05, 1), title = &#39;Temperature ($^\circ$C)&#39;, loc=&#39;upper left&#39;)
+            plt.xlabel(&#39;Pressure (bar)&#39;)
+            plt.ylabel(&#39;$\Delta$G&#39;)
+            plt.title(&#39;Pressure vs. $\Delta$G&#39;)
+        plt.show()
+        
+        plt.figure()    
+        for i in self.tDelV:
+            plt.plot(self.pressRed, i)
+            plt.legend(self.tempRed,bbox_to_anchor=(1.05, 1), title = &#39;Temperature ($^\circ$C)&#39;, loc=&#39;upper left&#39;)
+            plt.xlabel(&#39;Pressure (bar)&#39;)
+            plt.ylabel(&#39;$\Delta$V&#39;)
+            plt.title(&#39;Pressure vs. $\Delta$V&#39;)
+        plt.show()
+        
+        plt.figure()              
+        for i in self.tLogK:
+            plt.plot(self.pressRed, i)
+            plt.legend(self.tempRed,bbox_to_anchor=(1.05, 1), title = &#39;Temperature ($^\circ$C)&#39;, loc=&#39;upper left&#39;)
+            plt.xlabel(&#39;Pressure (bar)&#39;)
+            plt.ylabel(&#39;LogK&#39;)
+            plt.title(&#39;Pressure vs. LogK&#39;)
+        plt.show()
     return</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.make_supcrt_plots"><code class="name flex">
+<dt id="DEW Documentation.DEW.make_supcrt_plots"><code class="name flex">
 <span>def <span class="ident">make_supcrt_plots</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -4936,16 +5637,17 @@ This is not dependent on anything else being called first.</p></div>
         plt.show()</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.options"><code class="name flex">
+<dt id="DEW Documentation.DEW.options"><code class="name flex">
 <span>def <span class="ident">options</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Prints options for DEWModel</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def options(self):
+    &#39;&#39;&#39;Prints options for DEWModel&#39;&#39;&#39;
     print(&#39;Welcome to DEWPython, here are the options you can run:&#39;)
     print(&#39;1. DEW(): this initializes a Deep Earth Water Model Object&#39;)
     print(&#39;  -The DEW object requires the set_inputs, set_outputs, set_TPRho, and calculate methods to be run.&#39;)
@@ -4957,7 +5659,7 @@ This is not dependent on anything else being called first.</p></div>
     print(&#39;  -After this you can run make_supcrt_plots to plot the supcrt files akin the a DEW file&#39;)</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.outLoop"><code class="name flex">
+<dt id="DEW Documentation.DEW.outLoop"><code class="name flex">
 <span>def <span class="ident">outLoop</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -4976,7 +5678,116 @@ This is not dependent on anything else being called first.</p></div>
     print(&#39;Finished&#39;)</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.run_supcrt"><code class="name flex">
+<dt id="DEW Documentation.DEW.psat_supcrt"><code class="name flex">
+<span>def <span class="ident">psat_supcrt</span></span>(<span>rxn_lst, reaction_type='psat')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Takes a list of reaction lists (comprised of tuples) and runs supcrt</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def psat_supcrt(rxn_lst, reaction_type = &#39;psat&#39;):
+    &#39;&#39;&#39;Takes a list of reaction lists (comprised of tuples) and runs supcrt&#39;&#39;&#39;
+    for reaction in rxn_lst:
+        proc = subprocess.Popen(&#39;supcrt96.exe&#39;,stdout=subprocess.PIPE, stdin=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
+        pout = proc.stdout
+        pin = proc.stdin
+        it = 0
+        rxnVar = &#39;realReac.con&#39;
+    
+        if reaction_type != &#39;psat&#39;:
+            rxnVar = &#39;Xtend.con&#39;
+        
+        title = input(&#39;What is the title of your reaction?&#39;)
+        comm = [&#39;n&#39;, &#39;updateSlop1.dat&#39;, &#39;2&#39;, rxnVar, &#39;2&#39;, &#39;1&#39;, title]
+        for component in reaction:
+            if component[1] not in nameLst:
+                print(str(component[1]) + &#39; is not in the slop16 database. Please check your spelling and try again. You can use the search function the query the database.&#39;)
+            else:
+                comm.append(str(component[0]) + &#39; &#39; + component[1])
+            
+        comm.append(&#39;0&#39;)
+        comm.append(&#39;y&#39;)
+        comm.append(&#39;n&#39;)
+        comm.append(title + &#39;.txt&#39;)
+        comm.append(&#39;1&#39;)
+        comm.append(&#39;1&#39;)
+        comm.append(&#39;empty&#39;)
+
+        def outLoop():
+            running = True
+            while(running):
+                line = pout.readline().decode(sys.stdout.encoding)
+                running=&#39;\n&#39; in line
+
+        threading.Thread(target=outLoop).start()
+        while(proc.poll() is None): 
+            try:
+                inp = comm[it]
+                it += 1
+        #     inp = bytearray(input(&#39;User Input: &#39;)+&#39;\n&#39;,sys.stdin.encoding)
+                if(proc.poll() is None):
+                    pin.write(bytearray(inp+&#39;\n&#39;,sys.stdin.encoding))
+                    pin.flush()
+            except:
+                pass
+    return</code></pre>
+</details>
+</dd>
+<dt id="DEW Documentation.DEW.run"><code class="name flex">
+<span>def <span class="ident">run</span></span>(<span>self, pt_arr, min_inp=[], aq_inp=[], g_inp=[], h2o_inp=0, min_out=[], aq_out=[], g_out=[], h2o_out=0, ptInp='Psat', rhoWat='Z&D 2005', forceBool=False, dieEQ='Supcrt', forceSC=True, WFEQ='D&H 1978', dsV=True, pdsV=True, DV=True, EQ=1, dEQ=1, pst=True, mWn=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This function allows the user to bypass the input functions and just adjust the values they desire. Accepts a pressure/temperature array as input</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run(self, pt_arr, min_inp =[], aq_inp = [], g_inp = [], h2o_inp = 0, min_out = [],aq_out =[], g_out = [],h2o_out = 0, 
+    ptInp = &#39;Psat&#39;, rhoWat = &#39;Z&amp;D 2005&#39;, forceBool = False, dieEQ = &#39;Supcrt&#39;, forceSC = True, 
+    WFEQ =&#39;D&amp;H 1978&#39;, dsV = True, pdsV = True, DV = True, EQ = 1, dEQ = 1, pst = True, mWn = 1):
+    &#39;&#39;&#39;This function allows the user to bypass the input functions and just adjust the values they desire. Accepts a pressure/temperature array as input &#39;&#39;&#39;
+    if h2o_inp &gt; 0:
+        self.waterInputs = [[&#39;yes&#39;,h2o_inp]]
+    else:
+        self.waterInputs = [[&#39;no&#39;,0]]
+    if h2o_out &gt; 0:
+        self.waterOutputs = [[&#39;yes&#39;,h2o_out]]
+    else:
+        self.waterOutputs = [[&#39;no&#39;,0]]
+
+    self.mineralInputs = min_inp
+    self.aqueousInputs = aq_inp
+    self.gasInputs = g_inp
+
+    self.mineralOutputs = min_out
+    self.aqueousOutputs = aq_out
+    self.gasOutputs = g_out
+
+
+    self.ptInput = ptInp
+    self.RhoOfWater = rhoWat
+    self.forceCustom = forceBool
+    self.dielectricEq = dieEQ     
+    self.ForceSupcrt = forceSC
+    self.WaterFreeEq =  WFEQ
+    self.DisplayVolOpt = dsV
+    self.PsatDisplayVol = pdsV
+    self.DisplayVol = DV
+    self.equation = EQ
+    self.diaEq = dEQ
+    self.psat = pst
+    self.waterDensity = mWn
+
+    # to actually run:
+    self.set_tp(pt_arr)
+    self.calculate()
+    self.make_plots()
+    return</code></pre>
+</details>
+</dd>
+<dt id="DEW Documentation.DEW.run_supcrt"><code class="name flex">
 <span>def <span class="ident">run_supcrt</span></span>(<span>self, version='96')</span>
 </code></dt>
 <dd>
@@ -5005,7 +5816,7 @@ This is not dependent on anything else being called first.</p></div>
     return</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.set_TPRho"><code class="name flex">
+<dt id="DEW Documentation.DEW.set_TPRho"><code class="name flex">
 <span>def <span class="ident">set_TPRho</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -5045,14 +5856,14 @@ calculations.</p></div>
                 templow = int(input(&#39;Input the minimum temperature&#39;))
                 temphigh = int(input(&#39;Input the maximum temperature&#39;))
                 tempstep = int(input(&#39;Input the temperature step&#39;))
-                pmin = int(input(&#39;Input the minimum pressure&#39;))
-                pmax = int(input(&#39;Input the maximum pressure&#39;))
-                pstep = input(&#39;Input the pressure step&#39;)
+                pmin = float(input(&#39;Input the minimum pressure (Kb)&#39;))
+                pmax = float(input(&#39;Input the maximum pressure (Kb)&#39;))
+                pstep = float(input(&#39;Input the pressure step (Kb)&#39;))
                 validBool = True
             except ValueError:
                 print(&#39;You have entered a non-integer value, please start again&#39;)
         tempArr = np.arange(start= templow, stop = temphigh + 1, step = tempstep)
-        parrHelp = np.arange(start= pmin, stop = pmax + 1, step = pstep)
+        parrHelp = np.arange(start= pmin, stop = pmax + .1, step = pstep)
         for i in range(len(parrHelp)):
             pressArr.append([parrHelp[i]]* len(tempArr))
         pressArr = np.multiply(pressArr, 1000)
@@ -5109,13 +5920,16 @@ calculations.</p></div>
         self.diaEq = 5
     
     # write code to take in custom Rho, G, and Water Values here
+    self.densityCollection = np.asarray(self.densityCollection).astype(float)
+    self.dielectricCollection = np.asarray(self.dielectricCollection).astype(float)
+    self.gibbsCollection = np.asarray(self.gibbsCollection).astype(float)
     
     # Sets the water density array
     for i in range(len(self.pressureUsed)):        
         # For the custom array
         if self.RhoOfWater ==&#34;Custom&#34; or (self.forceCustom == True and self.pressureUsed[i] &lt; 1000):
-            idx = np.intersect1d(np.where(np.asarray(self.densityCollection) == pressureUsed[i]/1000), np.where(np.asarray(self.densityCollection) == self.tempUsed[i]))[0]
-            if not np.isnan(RhoCollection[idx][2]):
+            idx = np.intersect1d(np.where(np.asarray(self.densityCollection) == self.pressureUsed[i]/1000), np.where(np.asarray(self.densityCollection) == self.tempUsed[i]))[0]
+            if not np.isnan(self.densityCollection[idx][2]):
                 self.RhoWatArr.append(self.densityCollection[idx][2])
             else:
                 self.RhoWatArr.append(0)
@@ -5127,7 +5941,7 @@ calculations.</p></div>
         
         # for the custom array
         if self.dielectricEq == &#34;Custom&#34;:
-            idx = np.intersect1d(np.where(np.asarray(self.dielectricCollection) == pressureUsed[i]/1000), np.where(np.asarray(self.dielectricCollection) == self.tempUsed[i]))[0]
+            idx = np.intersect1d(np.where(np.asarray(self.dielectricCollection) == self.pressureUsed[i]/1000), np.where(np.asarray(self.dielectricCollection) == self.tempUsed[i]))[0]
             if not np.isnan(self.dielectricCollection[idx][2]):
                 self.DiaArr.append(self.dielectricCollection[idx][2])
             else:
@@ -5155,7 +5969,7 @@ calculations.</p></div>
     # Sets up custom Gibbs of Water Array:
     if self.WaterFreeEq == &#34;Custom&#34;:
         for i in range(len(self.pressureUsed)):
-            idx = np.intersect1d(np.where(np.asarray(self.gibbsCollection) == pressureUsed[i]/1000), np.where(np.asarray(self.gibbsCollection) == self.tempUsed[i]))[0]
+            idx = np.intersect1d(np.where(np.asarray(self.gibbsCollection) == self.pressureUsed[i]/1000), np.where(np.asarray(self.gibbsCollection) == self.tempUsed[i]))[0]
             if not np.isnan(self.gibbsCollection[idx][2]):
                 self.GibbsH2O.append(self.gibbsCollection[idx][2])
             else:
@@ -5163,7 +5977,7 @@ calculations.</p></div>
     return</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.set_inputs"><code class="name flex">
+<dt id="DEW Documentation.DEW.set_inputs"><code class="name flex">
 <span>def <span class="ident">set_inputs</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -5184,8 +5998,9 @@ calculations.</p></div>
     self.mineralInputs = []
     self.aqueousInputs = []
     self.gasInputs = []
+    self.waterInputs = []
     
-    while mineralCount &lt; 5:
+    while mineralCount &lt; 15:
         mineralCount += 1
         validBool = False
         while not validBool:
@@ -5213,7 +6028,7 @@ calculations.</p></div>
         self.mineralInputs.append([inp, inp2])
         
         
-    while aqCount &lt;6:
+    while aqCount &lt;15:
         aqCount += 1
         validBool = False
         while not validBool:
@@ -5240,7 +6055,7 @@ calculations.</p></div>
         self.aqueousInputs.append([inp, inp2])
         
         
-    while gasCount &lt; 3:
+    while gasCount &lt; 15:
         gasCount += 1
         validBool = False
         while not validBool:
@@ -5270,12 +6085,10 @@ calculations.</p></div>
         
         # Water
     validBool3 = False
-    self.inpWater = []
     while not validBool3:
         inpWater = input(&#39;Would you like to use water? (yes/no)&#39;)
         if inpWater in [&#39;yes&#39;, &#39;no&#39;]:
             validBool3 = True
-            self.inpWater = inpWater
         else:
             print(&#39;Please answer yes or no&#39;)
             continue
@@ -5293,7 +6106,7 @@ calculations.</p></div>
     return</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.set_outputs"><code class="name flex">
+<dt id="DEW Documentation.DEW.set_outputs"><code class="name flex">
 <span>def <span class="ident">set_outputs</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -5317,7 +6130,7 @@ calculations.</p></div>
     self.waterOutputs = []
 
 
-    while mineralCount &lt; 5:
+    while mineralCount &lt; 15:
         mineralCount += 1
         validBool = False
         while not validBool:
@@ -5340,7 +6153,7 @@ calculations.</p></div>
         self.mineralOutputs.append([inp, inp2])
         
         
-    while aqCount &lt;6:
+    while aqCount &lt;15:
         aqCount += 1
         validBool = False
         while not validBool:
@@ -5366,7 +6179,7 @@ calculations.</p></div>
             break
         self.aqueousOutputs.append([inp, inp2])
         
-    while gasCount &lt; 3:
+    while gasCount &lt; 15:
         gasCount += 1
         validBool = False
         while not validBool:
@@ -5414,7 +6227,7 @@ calculations.</p></div>
     return</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEW.set_preferences"><code class="name flex">
+<dt id="DEW Documentation.DEW.set_preferences"><code class="name flex">
 <span>def <span class="ident">set_preferences</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -5516,13 +6329,232 @@ are set to be identical to the example calculation on the Deep Earth Water Model
         else:
             print(&#39;Please enter one of the provided options&#39;)
     if self.WaterFreeEq == &#34;Custom&#34; or self.dielectricEq == &#34;Custom&#34; or self.RhoOfWater == &#34;Custom&#34;:
-        self.dielectricCollection, self.densityCollection, self.gibbsCollection = import_custom_sheets()
+        self.dielectricCollection, self.densityCollection, self.gibbsCollection = self.import_custom_sheets()
+    return</code></pre>
+</details>
+</dd>
+<dt id="DEW Documentation.DEW.set_tp"><code class="name flex">
+<span>def <span class="ident">set_tp</span></span>(<span>self, pt_arr)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Setting the PT values, but automated for the helperfunction. Can also be used to quick set tp with prompted input</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_tp(self, pt_arr):
+    &#39;&#39;&#39;Setting the PT values, but automated for the helperfunction. Can also be used to quick set tp with prompted input&#39;&#39;&#39;
+    pressArr = []
+    tempArr = []
+    self.RhoWatArr = []
+    self.DiaArr = []
+    self.QArr =[]
+    self.gibbsLst = []
+    self.logK = []
+    self.vLst = []
+    self.delG = []
+    self.delV = []
+    
+    if self.ptInput == &#34;Custom&#34;:
+        ptSheet = pd.read_excel(DEW_Location, sheet_name = &#39;Input&#39;, header = None)
+        ptFinder = ptSheet.to_numpy()
+        pressArr = ptFinder[:,79][5:]
+        tempArr = ptFinder[:,80][5:]
+        storeidx = 0
+        storeidxP = 0
+        for i in range(len(tempArr)):
+            if np.isnan(tempArr[i]) == True:
+                storeidx = int(i)
+                break
+        for i in range(len(pressArr)):
+            if np.isnan(pressArr[i]) == True:
+                storeidxP = int(i)
+                break
+
+        tempArr = tempArr[:storeidx]
+        pressArr = pressArr[:storeidxP]
+
+    elif self.ptInput == &#34;Regular&#34;:
+        try:
+            templow = pt_arr[0][0]
+            temphigh =pt_arr[0][1]
+            tempstep = pt_arr[0][2]
+            pmin = pt_arr[1][0]
+            pmax = pt_arr[1][1]
+            pstep = pt_arr[1][2]
+        except ValueError:
+            print(&#39;Your PT array is not formatted correctly. Please use the format [[tmin, tmax, tstep][pmin, pmax, pstep]]&#39;)
+        tempArr = np.arange(start= templow, stop = temphigh + 1, step = tempstep)
+        parrHelp = np.arange(start= pmin, stop = pmax + 1, step = pstep)
+        for i in range(len(parrHelp)):
+            pressArr.append([parrHelp[i]]* len(tempArr))
+        pressArr = np.multiply(pressArr, 1000)
+        tempArr = [tempArr] * len(parrHelp)
+        
+    elif self.ptInput == &#34;Psat&#34;:
+        try:
+            templow = pt_arr[0]
+            temphigh = pt_arr[1]
+            tempstep = pt_arr[2]
+            validBool = True
+        except ValueError:
+            print(&#39;Your input is not formatted correctly. Please use the format for psat of [tmin, tmax, tstep]&#39;)
+                
+        tempArr = np.arange(start= templow, stop = temphigh + 1, step = tempstep)
+        for i in range(len(tempArr)):
+            
+            if tempArr[i] &lt; 100:
+                pressArr.append(1)
+            else:
+                pressArr.append(2.1650906415E-11*np.double(tempArr[i])**5 + 0.0008467019353*np.double(tempArr[i])**2 - 0.17973651666*tempArr[i] + 10.7768850763807)
+            
+    else:
+        # If I&#39;ve done the checking correctly above it should never reach this
+        raise ValueError(&#34;You have not set your options yet, please set them before continuing&#34;)
+    self.tempUsed = np.ndarray.flatten(np.asarray(tempArr))
+    self.pressureUsed = np.ndarray.flatten(np.asarray(pressArr))
+    self.tKelvin = np.add(self.tempUsed, 273.15)
+    
+    # code to set options in a way the equations can understand
+    if self.ptInput == &#34;Psat&#34;:
+        self.psat = True
+    else:
+        self.psat = False
+        
+    if self.RhoOfWater ==&#39;Z&amp;D 2005&#39;:
+        self.equation = 1
+    elif self.RhoOfWater == &#39;Z&amp;D 2009&#39;:
+        self.equation = 2
+    else:
+        self.equation = 3
+        
+    if self.dielectricEq == &#34;Supcrt&#34;:
+        self.diaEq = 1
+    elif self.dielectricEq == &#34;Franck&#34;:
+        self.diaEq = 2
+    elif self.dielectricEq == &#34;Fernandez&#34;:
+        self.diaEq = 3
+    elif self.dielectricEq == &#34;Sverjensky&#34;:
+        self.diaEq = 4
+    else:
+        self.diaEq = 5
+    
+    # write code to take in custom Rho, G, and Water Values here
+    self.densityCollection = np.asarray(self.densityCollection).astype(float)
+    self.dielectricCollection = np.asarray(self.dielectricCollection).astype(float)
+    self.gibbsCollection = np.asarray(self.gibbsCollection).astype(float)
+    
+    # Sets the water density array
+    for i in range(len(self.pressureUsed)):        
+        # For the custom array
+        if self.RhoOfWater ==&#34;Custom&#34; or (self.forceCustom == True and self.pressureUsed[i] &lt; 1000):
+            idx = np.intersect1d(np.where(np.asarray(self.densityCollection).astype(float) == self.pressureUsed[i]/1000), np.where(np.asarray(self.densityCollection).astype(float) == self.tempUsed[i]))[0]
+            if not np.isnan(self.densityCollection[idx][2]):
+                self.RhoWatArr.append(self.densityCollection[idx][2])
+            else:
+                self.RhoWatArr.append(0)
+        else:
+            self.RhoWatArr.append(DEWEquations.calculateDensity(self.pressureUsed[i], self.tempUsed[i], self.equation, 0.01, self.psat))
+           
+    # Sets the dielectric constant array
+    for i in range(len(self.pressureUsed)):
+        
+        # for the custom array
+        if self.dielectricEq == &#34;Custom&#34;:
+            idx = np.intersect1d(np.where(np.asarray(self.dielectricCollection).astype(float) == self.pressureUsed[i]/1000), np.where(np.asarray(self.dielectricCollection).astype(float) == self.tempUsed[i]))[0]
+            if not np.isnan(self.dielectricCollection[idx][2]):
+                self.DiaArr.append(self.dielectricCollection[idx][2])
+            else:
+                self.DiaArr.append(0)
+        else:
+            if self.ForceSupcrt == True and self.pressureUsed[i] &lt; 5000 and self.psat == False:
+                self.DiaArr.append(DEWEquations.calculateEpsilon(self.RhoWatArr[i], self.tempUsed[i], 1, self.psat))
+            else:
+                self.DiaArr.append(DEWEquations.calculateEpsilon(self.RhoWatArr[i], self.tempUsed[i], self.diaEq, self.psat))
+    
+    
+    # Sets up the Q array
+    for i in range(len(self.pressureUsed)):
+        if self.DisplayVol == True:
+            try:
+                # Has issues with some Q, not sure if problematic
+                self.QArr.append(float(DEWEquations.calculateQ(self.pressureUsed[i], self.tempUsed[i], self.RhoWatArr[i], self.equation, self.diaEq, self.psat))*np.double(10)**6)
+            except:
+                self.QArr.append(0)
+        else:
+            self.QArr.append(0)
+            
+    # Sets up custom Gibbs of Water Array:
+    if self.WaterFreeEq == &#34;Custom&#34;:
+        for i in range(len(self.pressureUsed)):
+            idx = np.intersect1d(np.where(np.asarray(self.gibbsCollection).astype(float) == self.pressureUsed[i]/1000), np.where(np.asarray(self.gibbsCollection).astype(float) == self.tempUsed[i]))[0]
+            if not np.isnan(self.gibbsCollection[idx][2]):
+                self.GibbsH2O.append(self.gibbsCollection[idx][2])
+            else:
+                self.GibbsH2O.append(0)
+    return</code></pre>
+</details>
+</dd>
+<dt id="DEW Documentation.DEW.supcrt_inp"><code class="name flex">
+<span>def <span class="ident">supcrt_inp</span></span>(<span>rxn_lst, reaction_type='psat')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Takes a list of reaction lists (comprised of tuples) and runs supcrt</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def supcrt_inp(rxn_lst, reaction_type = &#39;psat&#39;):
+    &#39;&#39;&#39;Takes a list of reaction lists (comprised of tuples) and runs supcrt&#39;&#39;&#39;
+    for reaction in rxn_lst:
+        proc = subprocess.Popen(&#39;supcrt96.exe&#39;,stdout=subprocess.PIPE, stdin=subprocess.PIPE,stderr=subprocess.STDOUT, shell=True)
+        pout = proc.stdout
+        pin = proc.stdin
+        it = 0
+        rxnVar = &#39;realReac.con&#39;
+
+        if reaction_type != &#39;psat&#39;:
+            rxnVar = &#39;Xtend.con&#39;
+
+        title = input(&#39;What is the title of your reaction?&#39;)
+        comm = [&#39;n&#39;, &#39;updateSlop1.dat&#39;, &#39;2&#39;, rxnVar, &#39;2&#39;, &#39;1&#39;, title]
+        for component in reaction:
+            if component[1] not in nameLst:
+                print(str(component[1]) + &#39; is not in the slop16 database. Please check your spelling and try again. You can use the search function the query the database.&#39;)
+            else:
+                comm.append(str(component[0]) + &#39; &#39; + component[1])
+
+        comm.append(&#39;0&#39;)
+        comm.append(&#39;y&#39;)
+        comm.append(&#39;n&#39;)
+        comm.append(title + &#39;.txt&#39;)
+        comm.append(&#39;1&#39;)
+        comm.append(&#39;1&#39;)
+        comm.append(&#39;empty&#39;)
+
+        def outLoop():
+            running = True
+            while(running):
+                line = pout.readline().decode(sys.stdout.encoding)
+                running=&#39;\n&#39; in line
+
+        threading.Thread(target=outLoop).start()
+        while(proc.poll() is None): 
+            try:
+                inp = comm[it]
+                it += 1
+            #     inp = bytearray(input(&#39;User Input: &#39;)+&#39;\n&#39;,sys.stdin.encoding)
+                if(proc.poll() is None):
+                    pin.write(bytearray(inp+&#39;\n&#39;,sys.stdin.encoding))
+                    pin.flush()
+            except:
+                pass
     return</code></pre>
 </details>
 </dd>
 </dl>
 </dd>
-<dt id="DEWDocs.DEWEquations"><code class="flex name class">
+<dt id="DEW Documentation.DEWEquations"><code class="flex name class">
 <span>class <span class="ident">DEWEquations</span></span>
 </code></dt>
 <dd>
@@ -6120,7 +7152,7 @@ and converts them into Python</p></div>
             #This represents the pressure and temperature dependent solvent function
             g = DEWEquations.calculateG(P, T, density)
             #Defines the electrostatic radius at the input P and T
-            re = reref + np.abs(Z) * g
+            re = reref + (Z) * g
             fn_return_value = eta *  ( Z * Z / re - Z /  ( 3.082 + g ) )
         return fn_return_value
     
@@ -6225,7 +7257,7 @@ and converts them into Python</p></div>
                     dfdP = - ( pow(( T - 155 )  / 300, 4.8) + 36.66666 * pow(( T - 155 )  / 300, 16) )  *  ( 3 * - 1.504956E-10 * pow(1000 - P, 2) + 4 * 5.017997E-14 * pow(1000 - P, 3) )
                 else:
                     dfdP = 0
-                fn_return_value = - b_g * DEWEquations.calculate_drhodP(density, T, equation) * g /  ( 1 - density )  - dfdP
+                fn_return_value = - b_g * calculate_drhodP(density, T, equation) * g /  ( 1 - density )  - dfdP
         return fn_return_value
     
     def calculateQ(pressure, temperature, density, densityEquation, epsilonEquation, Psat):
@@ -6274,7 +7306,7 @@ and converts them into Python</p></div>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="DEWDocs.DEWEquations.calculateDensity"><code class="name flex">
+<dt id="DEW Documentation.DEWEquations.calculateDensity"><code class="name flex">
 <span>def <span class="ident">calculateDensity</span></span>(<span>pressure, temperature, equation, error, Psat)</span>
 </code></dt>
 <dd>
@@ -6360,7 +7392,7 @@ for the equation was not entered, zero is returned.</p></div>
     return fn_return_value</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEWEquations.calculateEpsilon"><code class="name flex">
+<dt id="DEW Documentation.DEWEquations.calculateEpsilon"><code class="name flex">
 <span>def <span class="ident">calculateEpsilon</span></span>(<span>density, temperature, equation, Psat)</span>
 </code></dt>
 <dd>
@@ -6508,7 +7540,7 @@ for equation was not entered, zero is returned.</p></div>
     return fn_return_value</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEWEquations.calculateG"><code class="name flex">
+<dt id="DEW Documentation.DEWEquations.calculateG"><code class="name flex">
 <span>def <span class="ident">calculateG</span></span>(<span>P, T, density)</span>
 </code></dt>
 <dd>
@@ -6550,7 +7582,7 @@ Returns the value of the g function. If the density is greather than 1 g/cm^3, t
     return fn_return_value</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEWEquations.calculateGibbsOfWater"><code class="name flex">
+<dt id="DEW Documentation.DEWEquations.calculateGibbsOfWater"><code class="name flex">
 <span>def <span class="ident">calculateGibbsOfWater</span></span>(<span>pressure, temp, equation, densityEquation, Psat)</span>
 </code></dt>
 <dd>
@@ -6670,7 +7702,7 @@ zero is returned.</p></div>
     return fn_return_value</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEWEquations.calculateOmega"><code class="name flex">
+<dt id="DEW Documentation.DEWEquations.calculateOmega"><code class="name flex">
 <span>def <span class="ident">calculateOmega</span></span>(<span>P, T, density, name, wref, Z)</span>
 </code></dt>
 <dd>
@@ -6724,12 +7756,12 @@ in units of cal/mol and NOT multiplied by 10^-5.</p></div>
         #This represents the pressure and temperature dependent solvent function
         g = DEWEquations.calculateG(P, T, density)
         #Defines the electrostatic radius at the input P and T
-        re = reref + np.abs(Z) * g
+        re = reref + (Z) * g
         fn_return_value = eta *  ( Z * Z / re - Z /  ( 3.082 + g ) )
     return fn_return_value</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEWEquations.calculatePressure"><code class="name flex">
+<dt id="DEW Documentation.DEWEquations.calculatePressure"><code class="name flex">
 <span>def <span class="ident">calculatePressure</span></span>(<span>density, temperature, equation)</span>
 </code></dt>
 <dd>
@@ -6820,7 +7852,7 @@ If a proper value for the equation was not entered, zero is returned.</p></div>
     return fn_return_value</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEWEquations.calculateQ"><code class="name flex">
+<dt id="DEW Documentation.DEWEquations.calculateQ"><code class="name flex">
 <span>def <span class="ident">calculateQ</span></span>(<span>pressure, temperature, density, densityEquation, epsilonEquation, Psat)</span>
 </code></dt>
 <dd>
@@ -6901,7 +7933,7 @@ Returns the value of the g function. If the density is greather than 1 g/cm^3, t
     return fn_return_value</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEWEquations.calculate_depsdrho"><code class="name flex">
+<dt id="DEW Documentation.DEWEquations.calculate_depsdrho"><code class="name flex">
 <span>def <span class="ident">calculate_depsdrho</span></span>(<span>density, temperature, equation)</span>
 </code></dt>
 <dd>
@@ -7060,7 +8092,7 @@ for equation was not entered, zero is returned.</p></div>
     return fn_return_value</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEWEquations.calculate_dgdP"><code class="name flex">
+<dt id="DEW Documentation.DEWEquations.calculate_dgdP"><code class="name flex">
 <span>def <span class="ident">calculate_dgdP</span></span>(<span>P, T, density, g, equation, Psat=True)</span>
 </code></dt>
 <dd>
@@ -7128,11 +8160,11 @@ Returns the pressure derivative of the g function. If the density is greather th
                 dfdP = - ( pow(( T - 155 )  / 300, 4.8) + 36.66666 * pow(( T - 155 )  / 300, 16) )  *  ( 3 * - 1.504956E-10 * pow(1000 - P, 2) + 4 * 5.017997E-14 * pow(1000 - P, 3) )
             else:
                 dfdP = 0
-            fn_return_value = - b_g * DEWEquations.calculate_drhodP(density, T, equation) * g /  ( 1 - density )  - dfdP
+            fn_return_value = - b_g * calculate_drhodP(density, T, equation) * g /  ( 1 - density )  - dfdP
     return fn_return_value</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEWEquations.calculate_domegadP"><code class="name flex">
+<dt id="DEW Documentation.DEWEquations.calculate_domegadP"><code class="name flex">
 <span>def <span class="ident">calculate_domegadP</span></span>(<span>P, T, density, name, wref, Z, densityEquation, Psat)</span>
 </code></dt>
 <dd>
@@ -7210,7 +8242,7 @@ the derivative is zero. The value returned is in units of cal/mol/bar</p></div>
     return fn_return_value</code></pre>
 </details>
 </dd>
-<dt id="DEWDocs.DEWEquations.calculate_drhodP"><code class="name flex">
+<dt id="DEW Documentation.DEWEquations.calculate_drhodP"><code class="name flex">
 <span>def <span class="ident">calculate_drhodP</span></span>(<span>density, temperature, equation)</span>
 </code></dt>
 <dd>
@@ -7318,113 +8350,139 @@ was not entered, zero is returned.</p></div>
 <ul></ul>
 </div>
 <ul id="index">
+<li><h3><a href="#header-variables">Global variables</a></h3>
+<ul class="two-column">
+<li><code><a title="DEW Documentation.Chi" href="#DEW Documentation.Chi">Chi</a></code></li>
+<li><code><a title="DEW Documentation.Conversion" href="#DEW Documentation.Conversion">Conversion</a></code></li>
+<li><code><a title="DEW Documentation.E_PrTr" href="#DEW Documentation.E_PrTr">E_PrTr</a></code></li>
+<li><code><a title="DEW Documentation.Pr" href="#DEW Documentation.Pr">Pr</a></code></li>
+<li><code><a title="DEW Documentation.Psy" href="#DEW Documentation.Psy">Psy</a></code></li>
+<li><code><a title="DEW Documentation.T_r" href="#DEW Documentation.T_r">T_r</a></code></li>
+<li><code><a title="DEW Documentation.Theta" href="#DEW Documentation.Theta">Theta</a></code></li>
+<li><code><a title="DEW Documentation.Upsilon" href="#DEW Documentation.Upsilon">Upsilon</a></code></li>
+<li><code><a title="DEW Documentation.bigQ" href="#DEW Documentation.bigQ">bigQ</a></code></li>
+<li><code><a title="DEW Documentation.bigR" href="#DEW Documentation.bigR">bigR</a></code></li>
+<li><code><a title="DEW Documentation.mineralDictionary" href="#DEW Documentation.mineralDictionary">mineralDictionary</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="DEWDocs.aqueous_options" href="#DEWDocs.aqueous_options">aqueous_options</a></code></li>
-<li><code><a title="DEWDocs.gas_options" href="#DEWDocs.gas_options">gas_options</a></code></li>
-<li><code><a title="DEWDocs.mineral_options" href="#DEWDocs.mineral_options">mineral_options</a></code></li>
+<li><code><a title="DEW Documentation.search" href="#DEW Documentation.search">search</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="DEWDocs.DEW" href="#DEWDocs.DEW">DEW</a></code></h4>
+<h4><code><a title="DEW Documentation.DEW" href="#DEW Documentation.DEW">DEW</a></code></h4>
 <ul class="">
-<li><code><a title="DEWDocs.DEW.DiaArr" href="#DEWDocs.DEW.DiaArr">DiaArr</a></code></li>
-<li><code><a title="DEWDocs.DEW.DisplayVol" href="#DEWDocs.DEW.DisplayVol">DisplayVol</a></code></li>
-<li><code><a title="DEWDocs.DEW.DisplayVolOpt" href="#DEWDocs.DEW.DisplayVolOpt">DisplayVolOpt</a></code></li>
-<li><code><a title="DEWDocs.DEW.ForceSupcrt" href="#DEWDocs.DEW.ForceSupcrt">ForceSupcrt</a></code></li>
-<li><code><a title="DEWDocs.DEW.GibbsH2O" href="#DEWDocs.DEW.GibbsH2O">GibbsH2O</a></code></li>
-<li><code><a title="DEWDocs.DEW.PsatDisplayVol" href="#DEWDocs.DEW.PsatDisplayVol">PsatDisplayVol</a></code></li>
-<li><code><a title="DEWDocs.DEW.QArr" href="#DEWDocs.DEW.QArr">QArr</a></code></li>
-<li><code><a title="DEWDocs.DEW.RhoOfWater" href="#DEWDocs.DEW.RhoOfWater">RhoOfWater</a></code></li>
-<li><code><a title="DEWDocs.DEW.RhoWatArr" href="#DEWDocs.DEW.RhoWatArr">RhoWatArr</a></code></li>
-<li><code><a title="DEWDocs.DEW.WaterFreeEq" href="#DEWDocs.DEW.WaterFreeEq">WaterFreeEq</a></code></li>
-<li><code><a title="DEWDocs.DEW.aqInpGibbs" href="#DEWDocs.DEW.aqInpGibbs">aqInpGibbs</a></code></li>
-<li><code><a title="DEWDocs.DEW.aqInpV" href="#DEWDocs.DEW.aqInpV">aqInpV</a></code></li>
-<li><code><a title="DEWDocs.DEW.aqOutGibbs" href="#DEWDocs.DEW.aqOutGibbs">aqOutGibbs</a></code></li>
-<li><code><a title="DEWDocs.DEW.aqOutV" href="#DEWDocs.DEW.aqOutV">aqOutV</a></code></li>
-<li><code><a title="DEWDocs.DEW.aqueousInputs" href="#DEWDocs.DEW.aqueousInputs">aqueousInputs</a></code></li>
-<li><code><a title="DEWDocs.DEW.aqueousOutputs" href="#DEWDocs.DEW.aqueousOutputs">aqueousOutputs</a></code></li>
-<li><code><a title="DEWDocs.DEW.calculate" href="#DEWDocs.DEW.calculate">calculate</a></code></li>
-<li><code><a title="DEWDocs.DEW.calculate_H2O" href="#DEWDocs.DEW.calculate_H2O">calculate_H2O</a></code></li>
-<li><code><a title="DEWDocs.DEW.calculate_aq" href="#DEWDocs.DEW.calculate_aq">calculate_aq</a></code></li>
-<li><code><a title="DEWDocs.DEW.calculate_gas" href="#DEWDocs.DEW.calculate_gas">calculate_gas</a></code></li>
-<li><code><a title="DEWDocs.DEW.calculate_matrices" href="#DEWDocs.DEW.calculate_matrices">calculate_matrices</a></code></li>
-<li><code><a title="DEWDocs.DEW.calculate_supcrt" href="#DEWDocs.DEW.calculate_supcrt">calculate_supcrt</a></code></li>
-<li><code><a title="DEWDocs.DEW.calculate_supcrt_special" href="#DEWDocs.DEW.calculate_supcrt_special">calculate_supcrt_special</a></code></li>
-<li><code><a title="DEWDocs.DEW.delG" href="#DEWDocs.DEW.delG">delG</a></code></li>
-<li><code><a title="DEWDocs.DEW.delV" href="#DEWDocs.DEW.delV">delV</a></code></li>
-<li><code><a title="DEWDocs.DEW.densityCollection" href="#DEWDocs.DEW.densityCollection">densityCollection</a></code></li>
-<li><code><a title="DEWDocs.DEW.diaEq" href="#DEWDocs.DEW.diaEq">diaEq</a></code></li>
-<li><code><a title="DEWDocs.DEW.dielectricCollection" href="#DEWDocs.DEW.dielectricCollection">dielectricCollection</a></code></li>
-<li><code><a title="DEWDocs.DEW.dielectricEq" href="#DEWDocs.DEW.dielectricEq">dielectricEq</a></code></li>
-<li><code><a title="DEWDocs.DEW.equation" href="#DEWDocs.DEW.equation">equation</a></code></li>
-<li><code><a title="DEWDocs.DEW.export_to_csv" href="#DEWDocs.DEW.export_to_csv">export_to_csv</a></code></li>
-<li><code><a title="DEWDocs.DEW.forceCustom" href="#DEWDocs.DEW.forceCustom">forceCustom</a></code></li>
-<li><code><a title="DEWDocs.DEW.gasInpGibbs" href="#DEWDocs.DEW.gasInpGibbs">gasInpGibbs</a></code></li>
-<li><code><a title="DEWDocs.DEW.gasInpV" href="#DEWDocs.DEW.gasInpV">gasInpV</a></code></li>
-<li><code><a title="DEWDocs.DEW.gasInputs" href="#DEWDocs.DEW.gasInputs">gasInputs</a></code></li>
-<li><code><a title="DEWDocs.DEW.gasOutGibbs" href="#DEWDocs.DEW.gasOutGibbs">gasOutGibbs</a></code></li>
-<li><code><a title="DEWDocs.DEW.gasOutV" href="#DEWDocs.DEW.gasOutV">gasOutV</a></code></li>
-<li><code><a title="DEWDocs.DEW.gasOutputs" href="#DEWDocs.DEW.gasOutputs">gasOutputs</a></code></li>
-<li><code><a title="DEWDocs.DEW.gibbsCollection" href="#DEWDocs.DEW.gibbsCollection">gibbsCollection</a></code></li>
-<li><code><a title="DEWDocs.DEW.gibbsLst" href="#DEWDocs.DEW.gibbsLst">gibbsLst</a></code></li>
-<li><code><a title="DEWDocs.DEW.import_custom_sheets" href="#DEWDocs.DEW.import_custom_sheets">import_custom_sheets</a></code></li>
-<li><code><a title="DEWDocs.DEW.inAqMat" href="#DEWDocs.DEW.inAqMat">inAqMat</a></code></li>
-<li><code><a title="DEWDocs.DEW.inGasMat" href="#DEWDocs.DEW.inGasMat">inGasMat</a></code></li>
-<li><code><a title="DEWDocs.DEW.logK" href="#DEWDocs.DEW.logK">logK</a></code></li>
-<li><code><a title="DEWDocs.DEW.make_plots" href="#DEWDocs.DEW.make_plots">make_plots</a></code></li>
-<li><code><a title="DEWDocs.DEW.make_supcrt_plots" href="#DEWDocs.DEW.make_supcrt_plots">make_supcrt_plots</a></code></li>
-<li><code><a title="DEWDocs.DEW.mineralInpGibbs" href="#DEWDocs.DEW.mineralInpGibbs">mineralInpGibbs</a></code></li>
-<li><code><a title="DEWDocs.DEW.mineralInpV" href="#DEWDocs.DEW.mineralInpV">mineralInpV</a></code></li>
-<li><code><a title="DEWDocs.DEW.mineralInputs" href="#DEWDocs.DEW.mineralInputs">mineralInputs</a></code></li>
-<li><code><a title="DEWDocs.DEW.mineralOutGibbs" href="#DEWDocs.DEW.mineralOutGibbs">mineralOutGibbs</a></code></li>
-<li><code><a title="DEWDocs.DEW.mineralOutV" href="#DEWDocs.DEW.mineralOutV">mineralOutV</a></code></li>
-<li><code><a title="DEWDocs.DEW.mineralOutputs" href="#DEWDocs.DEW.mineralOutputs">mineralOutputs</a></code></li>
-<li><code><a title="DEWDocs.DEW.options" href="#DEWDocs.DEW.options">options</a></code></li>
-<li><code><a title="DEWDocs.DEW.outAqMat" href="#DEWDocs.DEW.outAqMat">outAqMat</a></code></li>
-<li><code><a title="DEWDocs.DEW.outGasMat" href="#DEWDocs.DEW.outGasMat">outGasMat</a></code></li>
-<li><code><a title="DEWDocs.DEW.outLoop" href="#DEWDocs.DEW.outLoop">outLoop</a></code></li>
-<li><code><a title="DEWDocs.DEW.pin" href="#DEWDocs.DEW.pin">pin</a></code></li>
-<li><code><a title="DEWDocs.DEW.pout" href="#DEWDocs.DEW.pout">pout</a></code></li>
-<li><code><a title="DEWDocs.DEW.pressureUsed" href="#DEWDocs.DEW.pressureUsed">pressureUsed</a></code></li>
-<li><code><a title="DEWDocs.DEW.proc" href="#DEWDocs.DEW.proc">proc</a></code></li>
-<li><code><a title="DEWDocs.DEW.psat" href="#DEWDocs.DEW.psat">psat</a></code></li>
-<li><code><a title="DEWDocs.DEW.ptInput" href="#DEWDocs.DEW.ptInput">ptInput</a></code></li>
-<li><code><a title="DEWDocs.DEW.run_supcrt" href="#DEWDocs.DEW.run_supcrt">run_supcrt</a></code></li>
-<li><code><a title="DEWDocs.DEW.set_TPRho" href="#DEWDocs.DEW.set_TPRho">set_TPRho</a></code></li>
-<li><code><a title="DEWDocs.DEW.set_inputs" href="#DEWDocs.DEW.set_inputs">set_inputs</a></code></li>
-<li><code><a title="DEWDocs.DEW.set_outputs" href="#DEWDocs.DEW.set_outputs">set_outputs</a></code></li>
-<li><code><a title="DEWDocs.DEW.set_preferences" href="#DEWDocs.DEW.set_preferences">set_preferences</a></code></li>
-<li><code><a title="DEWDocs.DEW.supcrtFile" href="#DEWDocs.DEW.supcrtFile">supcrtFile</a></code></li>
-<li><code><a title="DEWDocs.DEW.supcrtOut" href="#DEWDocs.DEW.supcrtOut">supcrtOut</a></code></li>
-<li><code><a title="DEWDocs.DEW.tKelvin" href="#DEWDocs.DEW.tKelvin">tKelvin</a></code></li>
-<li><code><a title="DEWDocs.DEW.tempUsed" href="#DEWDocs.DEW.tempUsed">tempUsed</a></code></li>
-<li><code><a title="DEWDocs.DEW.vLst" href="#DEWDocs.DEW.vLst">vLst</a></code></li>
-<li><code><a title="DEWDocs.DEW.waterDensity" href="#DEWDocs.DEW.waterDensity">waterDensity</a></code></li>
-<li><code><a title="DEWDocs.DEW.waterInpGibbs" href="#DEWDocs.DEW.waterInpGibbs">waterInpGibbs</a></code></li>
-<li><code><a title="DEWDocs.DEW.waterInpV" href="#DEWDocs.DEW.waterInpV">waterInpV</a></code></li>
-<li><code><a title="DEWDocs.DEW.waterInputs" href="#DEWDocs.DEW.waterInputs">waterInputs</a></code></li>
-<li><code><a title="DEWDocs.DEW.waterOutGibbs" href="#DEWDocs.DEW.waterOutGibbs">waterOutGibbs</a></code></li>
-<li><code><a title="DEWDocs.DEW.waterOutV" href="#DEWDocs.DEW.waterOutV">waterOutV</a></code></li>
-<li><code><a title="DEWDocs.DEW.waterOutputs" href="#DEWDocs.DEW.waterOutputs">waterOutputs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.DiaArr" href="#DEW Documentation.DEW.DiaArr">DiaArr</a></code></li>
+<li><code><a title="DEW Documentation.DEW.DisplayVol" href="#DEW Documentation.DEW.DisplayVol">DisplayVol</a></code></li>
+<li><code><a title="DEW Documentation.DEW.DisplayVolOpt" href="#DEW Documentation.DEW.DisplayVolOpt">DisplayVolOpt</a></code></li>
+<li><code><a title="DEW Documentation.DEW.ForceSupcrt" href="#DEW Documentation.DEW.ForceSupcrt">ForceSupcrt</a></code></li>
+<li><code><a title="DEW Documentation.DEW.GibbsH2O" href="#DEW Documentation.DEW.GibbsH2O">GibbsH2O</a></code></li>
+<li><code><a title="DEW Documentation.DEW.PsatDisplayVol" href="#DEW Documentation.DEW.PsatDisplayVol">PsatDisplayVol</a></code></li>
+<li><code><a title="DEW Documentation.DEW.QArr" href="#DEW Documentation.DEW.QArr">QArr</a></code></li>
+<li><code><a title="DEW Documentation.DEW.RhoOfWater" href="#DEW Documentation.DEW.RhoOfWater">RhoOfWater</a></code></li>
+<li><code><a title="DEW Documentation.DEW.RhoWatArr" href="#DEW Documentation.DEW.RhoWatArr">RhoWatArr</a></code></li>
+<li><code><a title="DEW Documentation.DEW.WaterFreeEq" href="#DEW Documentation.DEW.WaterFreeEq">WaterFreeEq</a></code></li>
+<li><code><a title="DEW Documentation.DEW.aqInpGibbs" href="#DEW Documentation.DEW.aqInpGibbs">aqInpGibbs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.aqInpV" href="#DEW Documentation.DEW.aqInpV">aqInpV</a></code></li>
+<li><code><a title="DEW Documentation.DEW.aqOutGibbs" href="#DEW Documentation.DEW.aqOutGibbs">aqOutGibbs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.aqOutV" href="#DEW Documentation.DEW.aqOutV">aqOutV</a></code></li>
+<li><code><a title="DEW Documentation.DEW.aqueousInputs" href="#DEW Documentation.DEW.aqueousInputs">aqueousInputs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.aqueousOutputs" href="#DEW Documentation.DEW.aqueousOutputs">aqueousOutputs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.calculate" href="#DEW Documentation.DEW.calculate">calculate</a></code></li>
+<li><code><a title="DEW Documentation.DEW.calculate_H2O" href="#DEW Documentation.DEW.calculate_H2O">calculate_H2O</a></code></li>
+<li><code><a title="DEW Documentation.DEW.calculate_aq" href="#DEW Documentation.DEW.calculate_aq">calculate_aq</a></code></li>
+<li><code><a title="DEW Documentation.DEW.calculate_gas" href="#DEW Documentation.DEW.calculate_gas">calculate_gas</a></code></li>
+<li><code><a title="DEW Documentation.DEW.calculate_matrices" href="#DEW Documentation.DEW.calculate_matrices">calculate_matrices</a></code></li>
+<li><code><a title="DEW Documentation.DEW.calculate_supcrt" href="#DEW Documentation.DEW.calculate_supcrt">calculate_supcrt</a></code></li>
+<li><code><a title="DEW Documentation.DEW.calculate_supcrt_special" href="#DEW Documentation.DEW.calculate_supcrt_special">calculate_supcrt_special</a></code></li>
+<li><code><a title="DEW Documentation.DEW.clear" href="#DEW Documentation.DEW.clear">clear</a></code></li>
+<li><code><a title="DEW Documentation.DEW.delG" href="#DEW Documentation.DEW.delG">delG</a></code></li>
+<li><code><a title="DEW Documentation.DEW.delV" href="#DEW Documentation.DEW.delV">delV</a></code></li>
+<li><code><a title="DEW Documentation.DEW.densityCollection" href="#DEW Documentation.DEW.densityCollection">densityCollection</a></code></li>
+<li><code><a title="DEW Documentation.DEW.diaEq" href="#DEW Documentation.DEW.diaEq">diaEq</a></code></li>
+<li><code><a title="DEW Documentation.DEW.dielectricCollection" href="#DEW Documentation.DEW.dielectricCollection">dielectricCollection</a></code></li>
+<li><code><a title="DEW Documentation.DEW.dielectricEq" href="#DEW Documentation.DEW.dielectricEq">dielectricEq</a></code></li>
+<li><code><a title="DEW Documentation.DEW.equation" href="#DEW Documentation.DEW.equation">equation</a></code></li>
+<li><code><a title="DEW Documentation.DEW.export_to_csv" href="#DEW Documentation.DEW.export_to_csv">export_to_csv</a></code></li>
+<li><code><a title="DEW Documentation.DEW.forceCustom" href="#DEW Documentation.DEW.forceCustom">forceCustom</a></code></li>
+<li><code><a title="DEW Documentation.DEW.gasInpGibbs" href="#DEW Documentation.DEW.gasInpGibbs">gasInpGibbs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.gasInpV" href="#DEW Documentation.DEW.gasInpV">gasInpV</a></code></li>
+<li><code><a title="DEW Documentation.DEW.gasInputs" href="#DEW Documentation.DEW.gasInputs">gasInputs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.gasOutGibbs" href="#DEW Documentation.DEW.gasOutGibbs">gasOutGibbs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.gasOutV" href="#DEW Documentation.DEW.gasOutV">gasOutV</a></code></li>
+<li><code><a title="DEW Documentation.DEW.gasOutputs" href="#DEW Documentation.DEW.gasOutputs">gasOutputs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.gibbsCollection" href="#DEW Documentation.DEW.gibbsCollection">gibbsCollection</a></code></li>
+<li><code><a title="DEW Documentation.DEW.gibbsLst" href="#DEW Documentation.DEW.gibbsLst">gibbsLst</a></code></li>
+<li><code><a title="DEW Documentation.DEW.import_custom_sheets" href="#DEW Documentation.DEW.import_custom_sheets">import_custom_sheets</a></code></li>
+<li><code><a title="DEW Documentation.DEW.inAqMat" href="#DEW Documentation.DEW.inAqMat">inAqMat</a></code></li>
+<li><code><a title="DEW Documentation.DEW.inGasMat" href="#DEW Documentation.DEW.inGasMat">inGasMat</a></code></li>
+<li><code><a title="DEW Documentation.DEW.logK" href="#DEW Documentation.DEW.logK">logK</a></code></li>
+<li><code><a title="DEW Documentation.DEW.make_plots" href="#DEW Documentation.DEW.make_plots">make_plots</a></code></li>
+<li><code><a title="DEW Documentation.DEW.make_supcrt_plots" href="#DEW Documentation.DEW.make_supcrt_plots">make_supcrt_plots</a></code></li>
+<li><code><a title="DEW Documentation.DEW.mineralInpGibbs" href="#DEW Documentation.DEW.mineralInpGibbs">mineralInpGibbs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.mineralInpV" href="#DEW Documentation.DEW.mineralInpV">mineralInpV</a></code></li>
+<li><code><a title="DEW Documentation.DEW.mineralInputs" href="#DEW Documentation.DEW.mineralInputs">mineralInputs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.mineralOutGibbs" href="#DEW Documentation.DEW.mineralOutGibbs">mineralOutGibbs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.mineralOutV" href="#DEW Documentation.DEW.mineralOutV">mineralOutV</a></code></li>
+<li><code><a title="DEW Documentation.DEW.mineralOutputs" href="#DEW Documentation.DEW.mineralOutputs">mineralOutputs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.options" href="#DEW Documentation.DEW.options">options</a></code></li>
+<li><code><a title="DEW Documentation.DEW.outAqMat" href="#DEW Documentation.DEW.outAqMat">outAqMat</a></code></li>
+<li><code><a title="DEW Documentation.DEW.outGasMat" href="#DEW Documentation.DEW.outGasMat">outGasMat</a></code></li>
+<li><code><a title="DEW Documentation.DEW.outLoop" href="#DEW Documentation.DEW.outLoop">outLoop</a></code></li>
+<li><code><a title="DEW Documentation.DEW.pDelG" href="#DEW Documentation.DEW.pDelG">pDelG</a></code></li>
+<li><code><a title="DEW Documentation.DEW.pDelV" href="#DEW Documentation.DEW.pDelV">pDelV</a></code></li>
+<li><code><a title="DEW Documentation.DEW.pLogK" href="#DEW Documentation.DEW.pLogK">pLogK</a></code></li>
+<li><code><a title="DEW Documentation.DEW.pin" href="#DEW Documentation.DEW.pin">pin</a></code></li>
+<li><code><a title="DEW Documentation.DEW.pout" href="#DEW Documentation.DEW.pout">pout</a></code></li>
+<li><code><a title="DEW Documentation.DEW.pressRed" href="#DEW Documentation.DEW.pressRed">pressRed</a></code></li>
+<li><code><a title="DEW Documentation.DEW.pressureUsed" href="#DEW Documentation.DEW.pressureUsed">pressureUsed</a></code></li>
+<li><code><a title="DEW Documentation.DEW.proc" href="#DEW Documentation.DEW.proc">proc</a></code></li>
+<li><code><a title="DEW Documentation.DEW.psat" href="#DEW Documentation.DEW.psat">psat</a></code></li>
+<li><code><a title="DEW Documentation.DEW.psat_supcrt" href="#DEW Documentation.DEW.psat_supcrt">psat_supcrt</a></code></li>
+<li><code><a title="DEW Documentation.DEW.ptInput" href="#DEW Documentation.DEW.ptInput">ptInput</a></code></li>
+<li><code><a title="DEW Documentation.DEW.run" href="#DEW Documentation.DEW.run">run</a></code></li>
+<li><code><a title="DEW Documentation.DEW.run_supcrt" href="#DEW Documentation.DEW.run_supcrt">run_supcrt</a></code></li>
+<li><code><a title="DEW Documentation.DEW.set_TPRho" href="#DEW Documentation.DEW.set_TPRho">set_TPRho</a></code></li>
+<li><code><a title="DEW Documentation.DEW.set_inputs" href="#DEW Documentation.DEW.set_inputs">set_inputs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.set_outputs" href="#DEW Documentation.DEW.set_outputs">set_outputs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.set_preferences" href="#DEW Documentation.DEW.set_preferences">set_preferences</a></code></li>
+<li><code><a title="DEW Documentation.DEW.set_tp" href="#DEW Documentation.DEW.set_tp">set_tp</a></code></li>
+<li><code><a title="DEW Documentation.DEW.supcrtFile" href="#DEW Documentation.DEW.supcrtFile">supcrtFile</a></code></li>
+<li><code><a title="DEW Documentation.DEW.supcrtOut" href="#DEW Documentation.DEW.supcrtOut">supcrtOut</a></code></li>
+<li><code><a title="DEW Documentation.DEW.supcrt_inp" href="#DEW Documentation.DEW.supcrt_inp">supcrt_inp</a></code></li>
+<li><code><a title="DEW Documentation.DEW.tDelG" href="#DEW Documentation.DEW.tDelG">tDelG</a></code></li>
+<li><code><a title="DEW Documentation.DEW.tDelV" href="#DEW Documentation.DEW.tDelV">tDelV</a></code></li>
+<li><code><a title="DEW Documentation.DEW.tKelvin" href="#DEW Documentation.DEW.tKelvin">tKelvin</a></code></li>
+<li><code><a title="DEW Documentation.DEW.tLogK" href="#DEW Documentation.DEW.tLogK">tLogK</a></code></li>
+<li><code><a title="DEW Documentation.DEW.tempRed" href="#DEW Documentation.DEW.tempRed">tempRed</a></code></li>
+<li><code><a title="DEW Documentation.DEW.tempUsed" href="#DEW Documentation.DEW.tempUsed">tempUsed</a></code></li>
+<li><code><a title="DEW Documentation.DEW.vLst" href="#DEW Documentation.DEW.vLst">vLst</a></code></li>
+<li><code><a title="DEW Documentation.DEW.waterDensity" href="#DEW Documentation.DEW.waterDensity">waterDensity</a></code></li>
+<li><code><a title="DEW Documentation.DEW.waterInpGibbs" href="#DEW Documentation.DEW.waterInpGibbs">waterInpGibbs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.waterInpV" href="#DEW Documentation.DEW.waterInpV">waterInpV</a></code></li>
+<li><code><a title="DEW Documentation.DEW.waterInputs" href="#DEW Documentation.DEW.waterInputs">waterInputs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.waterOutGibbs" href="#DEW Documentation.DEW.waterOutGibbs">waterOutGibbs</a></code></li>
+<li><code><a title="DEW Documentation.DEW.waterOutV" href="#DEW Documentation.DEW.waterOutV">waterOutV</a></code></li>
+<li><code><a title="DEW Documentation.DEW.waterOutputs" href="#DEW Documentation.DEW.waterOutputs">waterOutputs</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="DEWDocs.DEWEquations" href="#DEWDocs.DEWEquations">DEWEquations</a></code></h4>
+<h4><code><a title="DEW Documentation.DEWEquations" href="#DEW Documentation.DEWEquations">DEWEquations</a></code></h4>
 <ul class="">
-<li><code><a title="DEWDocs.DEWEquations.calculateDensity" href="#DEWDocs.DEWEquations.calculateDensity">calculateDensity</a></code></li>
-<li><code><a title="DEWDocs.DEWEquations.calculateEpsilon" href="#DEWDocs.DEWEquations.calculateEpsilon">calculateEpsilon</a></code></li>
-<li><code><a title="DEWDocs.DEWEquations.calculateG" href="#DEWDocs.DEWEquations.calculateG">calculateG</a></code></li>
-<li><code><a title="DEWDocs.DEWEquations.calculateGibbsOfWater" href="#DEWDocs.DEWEquations.calculateGibbsOfWater">calculateGibbsOfWater</a></code></li>
-<li><code><a title="DEWDocs.DEWEquations.calculateOmega" href="#DEWDocs.DEWEquations.calculateOmega">calculateOmega</a></code></li>
-<li><code><a title="DEWDocs.DEWEquations.calculatePressure" href="#DEWDocs.DEWEquations.calculatePressure">calculatePressure</a></code></li>
-<li><code><a title="DEWDocs.DEWEquations.calculateQ" href="#DEWDocs.DEWEquations.calculateQ">calculateQ</a></code></li>
-<li><code><a title="DEWDocs.DEWEquations.calculate_depsdrho" href="#DEWDocs.DEWEquations.calculate_depsdrho">calculate_depsdrho</a></code></li>
-<li><code><a title="DEWDocs.DEWEquations.calculate_dgdP" href="#DEWDocs.DEWEquations.calculate_dgdP">calculate_dgdP</a></code></li>
-<li><code><a title="DEWDocs.DEWEquations.calculate_domegadP" href="#DEWDocs.DEWEquations.calculate_domegadP">calculate_domegadP</a></code></li>
-<li><code><a title="DEWDocs.DEWEquations.calculate_drhodP" href="#DEWDocs.DEWEquations.calculate_drhodP">calculate_drhodP</a></code></li>
+<li><code><a title="DEW Documentation.DEWEquations.calculateDensity" href="#DEW Documentation.DEWEquations.calculateDensity">calculateDensity</a></code></li>
+<li><code><a title="DEW Documentation.DEWEquations.calculateEpsilon" href="#DEW Documentation.DEWEquations.calculateEpsilon">calculateEpsilon</a></code></li>
+<li><code><a title="DEW Documentation.DEWEquations.calculateG" href="#DEW Documentation.DEWEquations.calculateG">calculateG</a></code></li>
+<li><code><a title="DEW Documentation.DEWEquations.calculateGibbsOfWater" href="#DEW Documentation.DEWEquations.calculateGibbsOfWater">calculateGibbsOfWater</a></code></li>
+<li><code><a title="DEW Documentation.DEWEquations.calculateOmega" href="#DEW Documentation.DEWEquations.calculateOmega">calculateOmega</a></code></li>
+<li><code><a title="DEW Documentation.DEWEquations.calculatePressure" href="#DEW Documentation.DEWEquations.calculatePressure">calculatePressure</a></code></li>
+<li><code><a title="DEW Documentation.DEWEquations.calculateQ" href="#DEW Documentation.DEWEquations.calculateQ">calculateQ</a></code></li>
+<li><code><a title="DEW Documentation.DEWEquations.calculate_depsdrho" href="#DEW Documentation.DEWEquations.calculate_depsdrho">calculate_depsdrho</a></code></li>
+<li><code><a title="DEW Documentation.DEWEquations.calculate_dgdP" href="#DEW Documentation.DEWEquations.calculate_dgdP">calculate_dgdP</a></code></li>
+<li><code><a title="DEW Documentation.DEWEquations.calculate_domegadP" href="#DEW Documentation.DEWEquations.calculate_domegadP">calculate_domegadP</a></code></li>
+<li><code><a title="DEW Documentation.DEWEquations.calculate_drhodP" href="#DEW Documentation.DEWEquations.calculate_drhodP">calculate_drhodP</a></code></li>
 </ul>
 </li>
 </ul>
